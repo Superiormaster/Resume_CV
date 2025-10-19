@@ -2,9 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>{{ data.full_name }} - Resume (Classic)</title>
+    <style>
+        @page{
+            size: A4;
+            margin: 20mm;
+        }
+
+        body{
+            color: #111;
+            font-family: Georgia, serif;
+        }
+
+        .header{
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .name{
+            font-size: 26px;
+        }
+
+        .contact{
+            color: #333;
+        }
+
+        .section{
+            margin-bottom: 12px;
+        }
+    </style>
 </head>
 <body>
+    <div class="header">
+        <div class="name">{{ data.full_name }}</div>
+        <div class="contact">{{ data.email }} . {{ data.phone }} . {{ data.website }}</div>
+    </div>
 
+    <div class="section">
+        <h3>Profile</h3>
+        <p>{{ data.summary }}</p>
+    </div>
+
+    <div class="section">
+        <h3>Skills</h3>
+        <p>{{ ",".join(data.skills) }}</p>
+    </div>
+
+    <div class="section">
+        <h3>Experience</h3>
+        {% for e in data.experience %}
+            <div>
+                <strong>{{ e.role }}</strong> — {{ e.company }}
+                <em>({{ e.dates }})</em>
+                <div>{{ e.desc }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h3>Education</h3>
+        {% for ed in data.education %}
+        <div>
+            {{ ed.degree }} - {{ ed.school }} ({{ ed.years }})
+        </div>
+        {% endfor %}
+    </div>
 </body>
 </html>

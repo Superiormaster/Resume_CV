@@ -2,9 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-
+    <div class="wrap">
+        <div id="dash">
+            <h2>Your Resumes</h2>
+            <p class="par2"><a href="{{ url_for('compose') }}">Create new resume</a> | <a href="{{ url_for('logout') }}">Logout</a></p>
+            <ul>
+                {% for r in resumes %}
+                <li class="list">
+                    {{ r.title }} - {{ r.created_at.strftime("%Y-%m-%d %H:%M") }} <br>[<a href="{{ url_for('view_resume', resume_id = r.id) }}" target="_blank">View</a>] <br>[Download: <a href="{{ url_for('download_resume', resume_id=resume.id, fmt='pdf') }}" class="btn btn-primary">Download PDF</a> | <a href="{{ url_for('download_resume', resume_id=resume.id, fmt='docx') }}" class="btn btn-secondary">Download DOCX</a> | <a href="{{ url_for('download_resume', resume_id=resume.id, fmt='txt') }}" class="btn btn-success">Download TXT</a> | <a href="{{ url_for('download_resume', resume_id=resume.id, fmt='json') }}" class="btn btn-info">Download JSON</a>
+                </li>
+                {% else %}
+                <li>No resumes yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </body>
 </html>

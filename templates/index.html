@@ -2,9 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Resume Builder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-
+<div class="container">
+    <div class="wrap">
+        <h1>Resume Builder</h1>
+        {% if current_user.is_authenticated %}
+            <p class="welcome">Welcome, {{ current_user.name or current_user.email }} - <a href="{{url_for('dashboard') }}">DASHBOARD</a> | <a href="{{ url_for('compose') }}">COMPOSE RESUME</a> | <a href="{{ url_for('logout') }}">LOGOUT</a> </p>
+        {% else %}
+            <p class="par"><a href="{{ url_for('login') }}">Login</a> | <a href="{{ url_for('register') }}">Register</a> </p>
+        {% endif %}
+        <hr>
+        <p class="par1">Choose a template and compose or preview your resume.</p>
+    </div>
+    <div class="img">
+        <div></div>
+    </div>
+</div>
 </body>
 </html>

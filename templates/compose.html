@@ -2,9 +2,96 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Compose Resume</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <div class="wrap">
+        <div class="display">
+        <div class="left">
+            <h2>Compose</h2>
+            <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <button type="submit">Upload File</button>
+            </form>
 
+            <form method="post" id="resumeForm" action="{{ url_for('save') }}">
+                <label>Template
+                    <select name="template" id="templateSelect">
+                        {% for t in templates %}
+                        <option value="{{ t }}">{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </label><br>
+                <label>Full name </label><input name="full_name" required><br>
+                <label>Title </label><input name="title"><br>
+                <label>Email </label><input name="email" type="email" required><br>
+                <label>Phone </label><input name="phone"><br>
+                <label>Website </label><input name="website"><br>
+                <label>LinkedIn </label><input name="linkedin" placeholder="https://..."><br>
+                <label>Summary  </label><textarea name="summary" rows="4"></textarea><br>
+                <label>Skills (comma separated) </label><input name="skills"><br>
+
+                <h4>Experience (up to 5)</h4>
+                {% for i in range(1,6) %}
+                <div class="exp">
+                    <input name="exp_role_{{i}}" placeholder="Role">
+                    <input name="exp_company_{{i}}" placeholder="Company">
+                    <input name="exp_dates_{{i}}" placeholder="Dates">
+                    <textarea name="exp_desc_{{i}}" placeholder="Description"></textarea>
+                </div>
+                {% endfor %}
+
+                <h4>Education (up to 3)</h4>
+                {% for i in range(1,4) %}
+                <div class="edu">
+                    <input name="edu_degree_{{i}}" placeholder="Degree">
+                    <input name="edu_school_{{i}}" placeholder="School">
+                    <input name="edu_years_{{i}}" placeholder="Years">
+                </div>
+                {% endfor %}
+
+                <button type="button" id="previewBtn">Live Preview</button>
+                <button type="submit">Save Resume</button>
+            </form>
+        </div>
+
+        <div class="right">
+            <h2>Live Preview</h2>
+            <iframe id="previewFrame" style="width: 100%; height:800px; border:1px solid #ccc;"></iframe>
+        </div>
+
+        <div>
+            <script>
+                let timeout;
+
+                async function updatePreview() {
+                    const form = document.getElementById('resumeForm');
+                    const data = new FormData(form);
+
+                    try{
+                        const resp =await fetch("{{ url_for('preview') }}", {
+                            method: "POST",
+                            body: data
+                        });
+
+                        const j = await resp.json();
+                        const iframe = document.getElementById('previewFrame');
+                        iframe.srcdoc = j.html;
+                    } catch (err) {
+                        console.error("Preview error", err);
+                    }
+                }
+                document.getElementById('previewBtn').addEventListener('click', updatePreview);
+                document.getElementById('resumeForm').addEventListener('input', () => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(updatePreview, 600);
+                });
+
+                window.addEventListener('load', updatePreview);
+            </script>
+        </div>
+        </div>
+    </div>
 </body>
 </html>
