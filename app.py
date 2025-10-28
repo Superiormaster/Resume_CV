@@ -2,10 +2,10 @@ import os
 import io
 import json
 from datetime import datetime
+import time
 from shlex import split
 from PIL.ImageOps import expand
-from docx.shared import Inches
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file
 from weasyprint.layout.inline import split_text_box
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -15,11 +15,13 @@ from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.units import mm
+from reportlab.lib import colors
 from docx import Document
 from docx.shared import Inches
 import qrcode
-from werkzeug.utils import send_file
 
 # Flask App Configuration
 BASE_DIR = os.path.abspath(os.path.dirname( __file__))
@@ -31,7 +33,7 @@ app.config['SECRET_KEY'] = 'dev-secret-change-me'
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, "uploads")
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-ALLOWED_EXTENSIONS = {'png', 'docx', 'txt'}
+ALLOWED_EXTENSIONS = {'png', 'docx', 'txt', 'pdf'}
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
 # Database Setup (SQLite)
@@ -44,7 +46,6 @@ db = SessionLocal()
 # Database Models
 class User(Base, UserMixin):
     __tablename__ = 'users'
-
     id = Column(Integer, primary_key=True)
     email = Column(String(200), unique=True, nullable=False)
     password_hash = Column(String(200), nullable=False)
@@ -66,7 +67,7 @@ class UploadedFile(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     filename = Column(String(255), nullable=False)
     filepath = Column(String(500), nullable=False)
-    uploadea_at = Column(DateTime, default=datetime.utcnow)
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
 
 Base.metadata.create_all(engine)
 
@@ -104,7 +105,7 @@ def register():
         with SessionLocal() as db:
             if db.query(User).filter_by(email=email).first():
                 flash('Email already registered.')
-                return redirect(url_for('register'))
+                return redirect(url_for('login'))
 
         user = User(email=email, password_hash=generate_password_hash(password), name=name)
         db.add(user)
@@ -131,7 +132,7 @@ def login():
 
             if not user or not check_password_hash(user.password_hash, password):
                 flash("Invalid Credentials")
-                return render_template('login')
+                return render_template('login.html')
 
             # Log in the user
             login_user(user)
@@ -147,18 +148,26 @@ def login():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    """User dashboard to view saved resumes."""
+    """User dashboard to view saved resumes and uploaded files."""
     with SessionLocal() as db:
-        resumes = (db.query(Resume)
-                   .filter_by(user_id=current_user.id)
-                   .order_by(Resume.created_at.desc())
-                   .all()
-                   )
+        resumes = (
+            db.query(Resume)
+            .filter_by(user_id=current_user.id)
+            .order_by(Resume.created_at.desc())
+            .all()
+        )
+
+        uploads = (
+            db.query(UploadedFile)
+            .filter_by(user_id=current_user.id)
+            .order_by(UploadedFile.uploaded_at.desc())
+            .all()
+        )
 
     if not resumes:
         flash("You haven't created any resumes.", "info")
 
-    return render_template('dashboard.html', resumes=resumes)
+    return render_template('dashboard.html', resumes=resumes, uploads=uploads)
 
 @app.route('/logout')
 @login_required
@@ -168,49 +177,43 @@ def logout():
     flash("You have been logged out.", "info")
     return redirect(url_for('index'))
 
-
-# ---------------- Resume Creation ----------------
-
 @app.route("/compose", methods=['GET', 'POST'])
 @login_required
 def compose():
     """Compose a new resume."""
     db = SessionLocal()
-    if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        phone = request.form["phone"]
-        summary = request.form["summary"]
-        education = request.form["education"]
-        experience = request.form["experience"]
-        skills = request.form["skills"]
+    try:
+        if request.method == "POST":
+            form = request.form.to_dict(flat=False)
+            simple = {k: v[0] if isinstance(v, list) and len(v) == 1 else v for k, v in form.items()}
+            structured = form_to_structured(simple)
 
-        resume = Resume(
-            user_id=current_user.id,
-            name=name,
-            email=email,
-            phone=phone,
-            summary=summary,
-            education=education,
-            experience=experience,
-            skills=skills,
-        )
+            if not structured.get("full_name"):
+                flash("Please enter your name")
+                return redirect(url_for('compose'))
 
-        if not resume["name"]:
-            flash("Please enter your name")
-            return redirect(url_for('compose'))
+            html_preview = render_template("templates_variants/template_modern.html", data=structured, preview=True)
 
-        db.add(resume)
-        db.commit()
+            resume = Resume(
+                user_id=current_user.id,
+                title=structured.get("full_name", "Untitled"),
+                template=simple.get("template", "template_modern.html"),
+                data_json=json.dumps(structured),
+                html_preview=html_preview,
+            )
+
+            db.add(resume)
+            db.commit()
+
+            flash("Resume saved successfully!", "success")
+            return redirect(url_for("dashboard"))
+
+        templates_dir = os.path.join(BASE_DIR, 'templates', 'templates_variants')
+        templates = os.listdir(templates_dir) if os.path.exists(templates_dir) else []
+        return render_template('compose.html', templates=templates)
+
+    finally:
         db.close()
-
-        flash("Resume saved successfully!", "success")
-        return redirect(url_for("dashboard"))
-
-    templates_dir = os.path.join(BASE_DIR, 'templates', 'templates_variants')
-    templates = os.listdir(templates_dir) if os.path.exists(templates_dir) else []
-
-    return render_template('compose.html', templates=templates)
 
 # ---------------- Resume Preview ----------------
 
@@ -239,7 +242,6 @@ def preview():
 def save():
     """Save a completed resume to the database."""
     db = SessionLocal()
-
     try:
         form = request.form.to_dict(flat=False)
         simple = {k: v[0] if isinstance(v, list) and len(v) == 1 else v for k, v in form.items()}
@@ -282,7 +284,7 @@ def allowed_file(filename):
 
 @app.route("/upload", methods=["POST"])
 @login_required
-def upload_file(save_path):
+def upload_file():
     """Upload a resume file."""
     if "file" not in request.files:
         flash("No file part.", "danger")
@@ -298,8 +300,8 @@ def upload_file(save_path):
         flash("Unsupported file type.", "danger")
         return redirect(request.referrer or url_for("dashboard"))
 
-    filename = secure_filename(file.filename)
-    file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+    filename = f"{int(time.time())}_{secure_filename(file.filename)}"
+    save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
     file.save(save_path)
 
     db = SessionLocal()
@@ -315,6 +317,47 @@ def upload_file(save_path):
     except Exception as e:
         db.rollback()
         flash(f"Error saving upload: {e}", "danger")
+    finally:
+        db.close()
+
+    return redirect(url_for("dashboard"))
+
+@app.route("/uploads/download/<int:file_id>")
+@login_required
+def download_uploaded(file_id):
+    db = SessionLocal()
+    try:
+        f = db.query(UploadedFile).filter_by(id=file_id, user_id=current_user.id)
+        if not f:
+            flash("File not found.", "danger")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        return send_file(f.filepath, as_attachment=True, download_name=f.filename)
+    except Exception as e:
+        flash(f"Error downloading file: {e}", "danger")
+        return redirect(request.referrer or url_for("dashboard"))
+    finally:
+        db.close()
+
+@app.route("/uploads/delete/<int:file_id>")
+@login_required
+def delete_uploaded(file_id):
+    db = SessionLocal()
+    try:
+        f = db.query(UploadedFile).filter_by(id=file_id, user_id=current_user.id).first()
+        if not f:
+            flash("File not found.", "danger")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        if os.path.exists(f.filepath):
+            os.remove(f.filepath)
+
+        db.delete(f)
+        db.commit()
+        flash("File deleted successfully!", "success")
+    except Exception as e:
+        db.rollback()
+        flash(f"Error deleting file: {e}", "danger")
     finally:
         db.close()
 
@@ -361,8 +404,9 @@ def structured_to_plaintext(data):
 def download_resume(resume_id, fmt):
     """Download a resume."""
     db = SessionLocal()
+    print("Trying to download resume:", resume_id, fmt)
     try:
-        r = db.query(Resume).filter_by(id=resume_id, user_id=current_user.id).first_or_404()
+        r = db.query(Resume).filter_by(id=resume_id, user_id=current_user.id).first()
         if not r:
             flash("Resume not found or you don't have permission.", "danger")
             return redirect(url_for("dashboard"))
@@ -372,19 +416,23 @@ def download_resume(resume_id, fmt):
 
         if fmt == "json":
             bio = io.BytesIO(json.dumps(data, indent=2).encode("utf-8"))
+            bio.seek(0)
             return send_file(bio, as_attachment=True, download_name=f"{title}.json", mimetype="application/json")
 
         elif fmt == "txt":
             txt = structured_to_plaintext(data)
             bio = io.BytesIO(txt.encode("utf-8"))
+            bio.seek(0)
             return send_file(bio, as_attachment=True, download_name=f"{title}.txt", mimetype="text/plain")
 
         elif fmt == "docx":
             docx_io = generate_docx(data)
+            docx_io.seek(0)
             return send_file(docx_io, as_attachment=True, download_name=f"{title}.docx", mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
         elif fmt == "pdf":
             pdf_io = generate_pdf_reportlab(data)
+            pdf_io.seek(0)
             return send_file(pdf_io, as_attachment=True, download_name=f"{title}.pdf", mimetype="application/pdf")
 
         else:
@@ -392,10 +440,12 @@ def download_resume(resume_id, fmt):
             return redirect(url_for("dashboard"))
 
     except Exception as e:
+        print("Download error:", e)
         flash(f"Error generating resume: {e}", "danger")
         return redirect(url_for("dashboard"))
     finally:
         db.close()
+
 
 def form_to_structured(d):
     structured = {}
@@ -450,15 +500,15 @@ def structured_to_text(data):
     if full_name:
         lines.append(f"Full name: {full_name}")
     if title:
-        lines.append("title")
+        lines.append(f"Title: {title}")
     lines.append("")
 
     #Contact
     lines.append("Contact:")
     if data.get("email"):
-        lines.append(data.get["email"].strip())
+        lines.append(data.get("email").strip())
     if data.get("phone"):
-        lines.append(data.get["phone"].strip())
+        lines.append(data.get("phone").strip())
     if data.get("website"):
         lines.append(f"Website: {data['website'].strip()}")
     if data.get("linkedin"):
@@ -466,7 +516,7 @@ def structured_to_text(data):
     lines.append("")
 
     # Summary
-    summary = data.get("summary", "").strip()
+    summary = (data.get("summary") or "").strip()
     if summary:
         lines.append("summary:")
         lines.append(data.get("summary","").strip())
@@ -517,91 +567,120 @@ def structured_to_text(data):
     return "\n".join(lines)
 
 def generate_pdf_reportlab(data):
-    buffer = io.BytesIO()
-    c =  canvas.Canvas(buffer, pagesize=A4)
-    width,height = A4
-    x_margin = 20
-    y = height - 20
+    pdf_io = io.BytesIO()
+    doc = SimpleDocTemplate(
+        pdf_io,
+        pagesize=A4,
+        rightMargin=40,
+        leftMargin=40,
+        topMargin=40,
+        bottomMargin=30,
+    )
 
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(x_margin, y, data.get("full_name", "").strip())
-    c.setFont("Helvetica", 10)
-    c.drawRightString(width-x_margin, y, data.get("title","").strip())
-    y -= 10*mm
+    gold = colors.HexColor("#C9A227")   # Gold
+    black = colors.HexColor("#0B0B0B")  # Black
+    gray = colors.HexColor("#555555")
 
-    c.setFont("Helvetica", 9)
-    c.drawString(x_margin, y, f"Email: {data.get('email','')}".strip())
-    y -= 5*mm
-    c.drawString(x_margin, y, f"Phone: {data.get('phone','')}".strip())
-    y -= 8*mm
-    if data.get("website"):
-        c.drawString(x_margin, y, f"Website: {data.get('website','')}".strip())
-        y -= 6*mm
+    # Custom styles
+    styles = {
+        "title": ParagraphStyle(
+            "title",
+            fontName="Helvetica-Bold",
+            fontSize=20,
+            textColor=black,
+            spaceAfter=12,
+        ),
+        "subtitle": ParagraphStyle(
+            "subtitle",
+            fontName="Helvetica",
+            fontSize=12,
+            textColor=gold,
+            spaceAfter=10,
+        ),
+        "section": ParagraphStyle(
+            "section",
+            fontName="Helvetica-Bold",
+            fontSize=14,
+            textColor=gold,
+            spaceBefore=16,
+            spaceAfter=6,
+        ),
+        "normal": ParagraphStyle(
+            "normal",
+            fontName="Helvetica",
+            fontSize=11,
+            textColor=black,
+            leading=16,
+        ),
+    }
+
+    story = []
+
+    # Header
+    story.append(Paragraph(data.get("full_name", "No Name"), styles["title"]))
+    if data.get("title"):
+        story.append(Paragraph(data.get("title", ""), styles["subtitle"]))
+    story.append(Spacer(1, 10))
+
+    # Contact Info
+    contact = []
+    if data.get("email"):
+        contact.append(f"📧 {data['email']}")
+    if data.get("phone"):
+        contact.append(f"📞 {data['phone']}")
     if data.get("linkedin"):
-        c.drawString(x_margin, y, f"Linkedin: {data.get('linkedin','')}".strip())
-        y -= 8*mm
+        contact.append(f"🔗 {data['linkedin']}")
+    if data.get("website"):
+        contact.append(f"🌐 {data['website']}")
+    story.append(Paragraph(" | ".join(contact), styles["normal"]))
+    story.append(Spacer(1, 10))
 
-    y -= 4*mm
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(x_margin, y, "Profile")
-    y -= 6*mm
-    c.setFont("Helvetica", 9)
-    text = c.beginText(x_margin, y)
-    for line in split_text_to_lines(data.get("summary",""), 90):
-        text.textLine(line)
-        y -= 4*mm
-    c.drawText(text)
-    y -= 4*mm
+    # Summary
+    if data.get("summary"):
+        story.append(Paragraph("Profile Summary", styles["section"]))
+        story.append(Paragraph(data["summary"], styles["normal"]))
 
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(x_margin, y, "Skills")
-    y -= 6*mm
-    c.setFont("Helvetica", 9)
-    skills = ", ".join(data.get("skills",[]))
-    for line in split_text_to_lines(skills, 90):
-        c.drawString(x_margin, y, line)
-        y -= 4*mm
+    # Skills
+    skills = data.get("skills", [])
+    if skills:
+        story.append(Paragraph("Skills", styles["section"]))
+        story.append(Paragraph(", ".join(skills), styles["normal"]))
 
-    y -= 6*mm
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(x_margin, y, "Experience")
-    y -= 6*mm
-    c.setFont("Helvetica", 9)
-    for e in data.get("experience",[]):
-        c.setFont("Helvetica", 9)
-        c.drawString(x_margin, y, f"{e.get('role','')}")
-        c.setFont("Helvetica", 8)
-        c.drawRightString(width - x_margin, y, f"{e.get('company','')} | {e.get('dates','')}")
-        y -= 5*mm
-        c.setFont("Helvetica", 9)
-        for line in split_text_to_lines(e.get("desc",""), 100):
-            c.drawString(x_margin + 6*mm, y, line)
-            y -= 4*mm
-        y -= 2*mm
-        if y < 40*mm:
-            c.showPage()
-            y = height - 20*mm
+    # Experience
+    exp = data.get("experience", [])
+    if exp:
+        story.append(Paragraph("Experience", styles["section"]))
+        for e in exp:
+            story.append(
+                Paragraph(f"<b>{e.get('role','')}</b> — {e.get('company','')} ({e.get('dates','')})", styles["normal"])
+            )
+            story.append(Paragraph(e.get("desc", ""), styles["normal"]))
+            story.append(Spacer(1, 6))
 
-    y -= 4*mm
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(x_margin, y, "Education")
-    y -= 6*mm
-    c.setFont("Helvetica", 9)
-    for ed in data.get("education",[]):
-        c.drawString(x_margin, y, f"{ed.get('degree','')} - {ed.get('school')} ({ed.get('years','')})")
-        y -= 6*mm
+    # Education
+    edu = data.get("education", [])
+    if edu:
+        story.append(Paragraph("Education", styles["section"]))
+        for ed in edu:
+            story.append(
+                Paragraph(f"{ed.get('degree','')} — {ed.get('school','')} ({ed.get('years','')})", styles["normal"])
+            )
+            story.append(Spacer(1, 6))
 
-    qr_data = data.get("linkedin") or data.get("website")
-    if qr_data:
-        qr = qrcode.make(qr_data)
-        qr_io = io.BytesIO()
-        qr.save(qr_io, format="png")
-        qr_io.seek(0)
-        c.drawImage(qr_io, width - (40*mm), 20*mm, width=30*mm, height=30*mm)
+    # Optional QR Section
+    if data.get("linkedin") or data.get("website"):
+        qr_data = data.get("linkedin") or data.get("website")
+        qr_img = qrcode.make(qr_data)
+        bio = io.BytesIO()
+        qr_img.save(bio, "PNG")
+        bio.seek(0)
+        story.append(Spacer(1, 12))
+        story.append(Paragraph("Scan to view online:", styles["section"]))
+        story.append(ImageReader(bio))
 
-    c.save()
-    buffer.seek(0)
-    return buffer
+    doc.build(story)
+    pdf_io.seek(0)
+    return pdf_io
 
 def split_text_to_lines(text, max_chars):
     """Split text into multiple lines without breaking words."""
@@ -674,7 +753,7 @@ def generate_docx(data):
         # Insert QR image (docx wants a file-like or path)
         doc.add_page_break()
         doc.add_heading("Scan this QR to view online:", level=1)
-        doc.add_picture(bio, width = inches(2))
+        doc.add_picture(bio, width = Inches(2))
 
     out = io.BytesIO()
     doc.save(out)

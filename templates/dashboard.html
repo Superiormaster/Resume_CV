@@ -3,23 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="wrap">
-        <div id="dash">
-            <h2>Your Resumes</h2>
-            <p class="par2"><a href="{{ url_for('compose') }}">Create new resume</a> | <a href="{{ url_for('logout') }}">Logout</a></p>
-            <ul>
-                {% for r in resumes %}
-                <li class="list">
-                    {{ r.title }} - {{ r.created_at.strftime("%Y-%m-%d %H:%M") }} <br>[<a href="{{ url_for('view_resume', resume_id = r.id) }}" target="_blank">View</a>] <br>[Download: <a href="{{ url_for('download_resume', resume_id=resume.id, fmt='pdf') }}" class="btn btn-primary">Download PDF</a> | <a href="{{ url_for('download_resume', resume_id=resume.id, fmt='docx') }}" class="btn btn-secondary">Download DOCX</a> | <a href="{{ url_for('download_resume', resume_id=resume.id, fmt='txt') }}" class="btn btn-success">Download TXT</a> | <a href="{{ url_for('download_resume', resume_id=resume.id, fmt='json') }}" class="btn btn-info">Download JSON</a>
-                </li>
-                {% else %}
-                <li>No resumes yet.</li>
-                {% endfor %}
-            </ul>
+    <div class="cont">
+        <header>
+            <button class="menu-btn" id="openDrawer" aria-controls="mainDrawer" aria-expanded="false" aria-label="Open menu">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+            <div style="flex:1">
+                <strong style="color:#5b5b5b; border-radius:5px; padding:4px 6px;">Superior CV</strong>
+            </div>
+        </header>
+
+        <div class="overlay" id="drawerOverlay" tabindex="-1" data-hidden="true"></div>
+
+        <aside class="drawer" id="mainDrawer" role="dialog" aria-modal="true" aria-label="Main menu" aria-hidden="true">
+            <div class="drawer__header">
+                <div class="avatar" aria-hidden="true">⌘</div>
+                <div>
+                    <div class="drawer__title">Superior CV</div>
+                    <div class="drawer__subtitle">Professional CV</div>
+                </div>
+            </div>
+
+            <div class="drawer-body">
+                <div class="section-title">Settings</div>
+                <ul class="nav-list" id="drawerNav">
+                    <li><a href="#settings" data-action="settings"><span class="icon" aria-hidden>⚙️</span>Settings<span class="meta"> </span> </a></li>
+                    <li><a href="#rate" data-action="rate"><span class="icon" aria-hidden>⭐</span>Rate us</a></li>
+                    <li><a href="#share" data-action="share"><span class="icon" aria-hidden>⇪</span>Share</a></li>
+                    <li><a href="#contact" data-action="contact"><span class="icon" aria-hidden>✉️</span>Contact us</a></li>
+                    <li><a href="#privacy" data-action="privacy"><span class="icon" aria-hidden>🔒</span>Privacy policy</a></li>
+                    <li><a href="{{ url_for('logout') }}"><span class="icon" aria-hidden>←</span>Logout</a></li>
+                </ul>
+
+                <div class="dark" id="color-box">
+                    <button id="toggle-btn">Dark Mode</button>
+                </div>
+
+                <div class="section-title">Premium</div>
+                <div class="premium" style="align-items:center;">
+                    <div class="crown" aria-hidden>👑</div>
+                    <div style="flex:1">
+                        <div style="font-weight:700">Upgrade to Premium</div>
+                        <div style="font-size:13px; color:#6b7280">Unlock our premium features</div>
+                    </div>
+                    <div>
+                        <a href="#upgrade" style="display:inline-block; padding:8px 10px; border-radius:10px; background:linear-gradient(90deg,#d4af37,#f3d07a); font-weight:700; color:#082031">Get</a>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="dash">
+            <div id="dash">
+                <h2>Your Resumes</h2>
+                <div class="dash-a">
+                    <a href="{{ url_for('compose') }}"><i class="fa fa-plus-circle" aria-hidden="true"></i>Create new resume</a>
+                    <a href="{{ url_for('logout') }}"><i class="fa fa-sign-out" aria-hidden="true"></i>Logout</a>
+                </div>
+            </div>
         </div>
+
+        <section id="dash-2">
+        <div class="dash-2">
+            <div class="uploads">
+                <div class="upload">
+                    <h3>Uploaded Files</h3>
+                    {% if uploads %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Uploaded At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for file in uploads %}
+                            <tr>
+                                <td>{{ file.filename }}</td>
+                                <td>{{ file.uploaded_at.strftime("%Y-%m_%d %H:%M") }}</td>
+                                <td>
+                                    <a href="{{ url_for('download_uploaded', file_id=file.id) }}" ><i class="fa fa-download" aria-hidden="true"></i>Download</a>
+                                    <a href="{{ url_for('delete_uploaded', file_id=file.id) }}" ><i class="fa fa-trash" aria-hidden="true"></i>Delete</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No uploaded files yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="nav">
+                <h3>List of resumes</h3>
+                <ul>
+                {% for r in resumes %}
+                    <li class="list">
+                        <div>
+                            {{ r.title }} - {{ r.created_at.strftime("%Y-%m-%d %H:%M") }} <br>
+                            <a href="{{ url_for('view_resume', resume_id = r.id) }}" target="_blank">View</a> <br>
+                            <label class="dash-label">Download:</label>
+                            <a href="{{ url_for('download_resume', resume_id=r.id, fmt='pdf') }}" class="btn btn-primary">Download PDF</a>
+                            <a href="{{ url_for('download_resume', resume_id=r.id, fmt='docx') }}" class="btn btn-secondary">Download DOCX</a>
+                            <a href="{{ url_for('download_resume', resume_id=r.id, fmt='txt') }}" class="btn btn-success">Download TXT</a>
+                            <a href="{{ url_for('download_resume', resume_id=r.id, fmt='json') }}" class="btn btn-info">Download JSON</a>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li>No resumes yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        </section>
     </div>
+        <script src="../static/slide.js"></script>
 </body>
 </html>
