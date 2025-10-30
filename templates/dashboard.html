@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
@@ -39,22 +40,18 @@
                     <li><a href="#share" data-action="share"><span class="icon" aria-hidden>⇪</span>Share</a></li>
                     <li><a href="#contact" data-action="contact"><span class="icon" aria-hidden>✉️</span>Contact us</a></li>
                     <li><a href="#privacy" data-action="privacy"><span class="icon" aria-hidden>🔒</span>Privacy policy</a></li>
-                    <li><a href="{{ url_for('logout') }}"><span class="icon" aria-hidden>←</span>Logout</a></li>
+                    <li><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out" aria-hidden="true"></i>Logout</a></li>
                 </ul>
-
-                <div class="dark" id="color-box">
-                    <button id="toggle-btn">Dark Mode</button>
-                </div>
 
                 <div class="section-title">Premium</div>
                 <div class="premium" style="align-items:center;">
                     <div class="crown" aria-hidden>👑</div>
                     <div style="flex:1">
-                        <div style="font-weight:700">Upgrade to Premium</div>
-                        <div style="font-size:13px; color:#6b7280">Unlock our premium features</div>
+                        <div style="font-weight:700" class="up-prem">Upgrade to Premium</div>
+                        <div style="color:#6b7280" class="up-prem1">Unlock our premium features</div>
                     </div>
                     <div>
-                        <a href="#upgrade" style="display:inline-block; padding:8px 10px; border-radius:10px; background:linear-gradient(90deg,#d4af37,#f3d07a); font-weight:700; color:#082031">Get</a>
+                        <a href="#upgrade" class="get" style="display:inline-block; padding:8px 10px; border-radius:10px; background:linear-gradient(90deg,#d4af37,#f3d07a); font-weight:700; color:#082031">Get</a>
                     </div>
                 </div>
             </div>
@@ -76,6 +73,7 @@
                 <div class="upload">
                     <h3>Uploaded Files</h3>
                     {% if uploads %}
+                    <div class="table-container">
                     <table>
                         <thead>
                             <tr>
@@ -89,7 +87,7 @@
                             <tr>
                                 <td>{{ file.filename }}</td>
                                 <td>{{ file.uploaded_at.strftime("%Y-%m_%d %H:%M") }}</td>
-                                <td>
+                                <td class="actions">
                                     <a href="{{ url_for('download_uploaded', file_id=file.id) }}" ><i class="fa fa-download" aria-hidden="true"></i>Download</a>
                                     <a href="{{ url_for('delete_uploaded', file_id=file.id) }}" ><i class="fa fa-trash" aria-hidden="true"></i>Delete</a>
                                 </td>
@@ -97,6 +95,7 @@
                         {% endfor %}
                         </tbody>
                     </table>
+                    </div>
                     {% else %}
                     <p>No uploaded files yet.</p>
                     {% endif %}
@@ -108,14 +107,21 @@
                 <ul>
                 {% for r in resumes %}
                     <li class="list">
-                        <div>
-                            {{ r.title }} - {{ r.created_at.strftime("%Y-%m-%d %H:%M") }} <br>
-                            <a href="{{ url_for('view_resume', resume_id = r.id) }}" target="_blank">View</a> <br>
-                            <label class="dash-label">Download:</label>
-                            <a href="{{ url_for('download_resume', resume_id=r.id, fmt='pdf') }}" class="btn btn-primary">Download PDF</a>
-                            <a href="{{ url_for('download_resume', resume_id=r.id, fmt='docx') }}" class="btn btn-secondary">Download DOCX</a>
-                            <a href="{{ url_for('download_resume', resume_id=r.id, fmt='txt') }}" class="btn btn-success">Download TXT</a>
-                            <a href="{{ url_for('download_resume', resume_id=r.id, fmt='json') }}" class="btn btn-info">Download JSON</a>
+                        <div class="list-item">
+                            <div class="resume-info">
+                                <strong>{{ r.title }}</strong><br>
+                            <small>{{ r.created_at.strftime("%Y-%m-%d %H:%M") }}</small>
+                            </div>
+                            <div class="resume-actions">
+                                <a href="{{ url_for('view_resume', resume_id = r.id) }}" target="_blank">View</a>
+                            <div class="downloads">
+                                <label class="dash-label">Download:</label>
+                                <a href="{{ url_for('download_resume', resume_id=r.id, fmt='pdf') }}" class="btn btn-primary">Download PDF</a>
+                                <a href="{{ url_for('download_resume', resume_id=r.id, fmt='docx') }}" class="btn btn-secondary">Download DOCX</a>
+                                <a href="{{ url_for('download_resume', resume_id=r.id, fmt='txt') }}" class="btn btn-success">Download TXT</a>
+                                <a href="{{ url_for('download_resume', resume_id=r.id, fmt='json') }}" class="btn btn-info">Download JSON</a>
+                            </div>
+                            </div>
                         </div>
                     </li>
                     {% else %}
@@ -126,6 +132,8 @@
         </div>
         </section>
     </div>
+    <button id="btn">↑</button>
+
         <script src="../static/slide.js"></script>
 </body>
 </html>

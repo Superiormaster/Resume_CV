@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const openDrawer = document.getElementById("openDrawer");
         const drawer = document.getElementById("mainDrawer");
         const overlay = document.getElementById("drawerOverlay");
-        const toggleBtn = document.getElementById("toggle-btn");
 
         if (!openDrawer || !drawer || !overlay) return;
 
@@ -16,18 +15,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         openDrawer.addEventListener("click", () => toggleDrawer(true));
         overlay.addEventListener("click", () => toggleDrawer(false));
-
-        let darkMode = localStorage.getItem("darkMode") === "true";
-
-        if (darkMode) {
-            document.body.classList.add("dark-mode");
-            toggleBtn.textContent = "Light Mode";
-        }
-
-        toggleBtn.addEventListener("click", () => {
-            document.body.classList.toggle("dark-mode", darkMode);
-            darkMode = !darkMode;
-            toggleBtn.textContent = darkMode ? "Light Mode" : "Dark Mode";
-        });
-
 });
+
+const btn = document.getElementById("btn");
+
+window.onscroll = () => {
+    btn.style.display = window.scrollY > 300 ? "block" : "none";
+};
+
+btn.onclick = () => window.scrollTo({ top:0, behavior: "smooth"});

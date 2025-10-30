@@ -10,7 +10,7 @@ from weasyprint.layout.inline import split_text_box
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager, login_user, login_required, current_user, UserMixin, logout_user
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader

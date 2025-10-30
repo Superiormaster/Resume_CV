@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <div class="cont">
+    <div class="content">
     <div>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -17,7 +19,7 @@
             {% endif %}
         {% endwith %}
     </div>
-    <div class="content">
+
         <header>
             <button class="menu-btn" id="openDrawer" aria-controls="mainDrawer" aria-expanded="false" aria-label="Open menu">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -48,27 +50,22 @@
                     <li><a href="#share" data-action="share"><span class="icon" aria-hidden>⇪</span>Share</a></li>
                     <li><a href="#contact" data-action="contact"><span class="icon" aria-hidden>✉️</span>Contact us</a></li>
                     <li><a href="#privacy" data-action="privacy"><span class="icon" aria-hidden>🔒</span>Privacy policy</a></li>
-                    <li><a href="{{ url_for('logout') }}"><span class="icon" aria-hidden>←</span>Logout</a></li>
+                    <li><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out" aria-hidden="true"></i>Logout</a></li>
                 </ul>
-
-                <div class="dark" id="color-box">
-                    <button id="toggle-btn">Dark Mode</button>
-                </div>
 
                 <div class="section-title">Premium</div>
                 <div class="premium" style="align-items:center;">
                     <div class="crown" aria-hidden>👑</div>
                     <div style="flex:1">
-                        <div style="font-weight:700">Upgrade to Premium</div>
-                        <div style="font-size:13px; color:#6b7280">Unlock our premium features</div>
+                        <div style="font-weight:700" class="up-prem">Upgrade to Premium</div>
+                        <div style="font-size:13px; color:#6b7280" class="up-prem1">Unlock our premium features</div>
                     </div>
                     <div>
-                        <a href="#upgrade" style="display:inline-block; padding:8px 10px; border-radius:10px; background:linear-gradient(90deg,#d4af37,#f3d07a); font-weight:700; color:#082031">Get</a>
+                        <a href="#upgrade" class="get" style="display:inline-block; padding:8px 10px; border-radius:10px; background:linear-gradient(90deg,#d4af37,#f3d07a); font-weight:700; color:#082031">Get</a>
                     </div>
                 </div>
             </div>
         </aside>
-    </div>
 
     <div id="wrap">
         <h2>Register Here</h2>
@@ -90,6 +87,9 @@
         </form>
     </div>
 </div>
+    </div>
+
+<button id="btn">↑</button>
 
     <script src="../static/slide.js"></script>
 </body>
