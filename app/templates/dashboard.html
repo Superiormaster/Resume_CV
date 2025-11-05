@@ -9,6 +9,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="flash-message {{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
     <div class="cont">
         <header>
             <button class="menu-btn" id="openDrawer" aria-controls="mainDrawer" aria-expanded="false" aria-label="Open menu">
@@ -17,7 +28,7 @@
                 </svg>
             </button>
             <div style="flex:1">
-                <strong style="color:#5b5b5b; border-radius:5px; padding:4px 6px;">Superior CV</strong>
+                <strong style="color:#5b5b5b; border-radius:5px; padding:4px 6px;"><img src="https://cdn-icons-png.flaticon.com/512/2965/2965358.png" alt="Resume icon">Superior CV</strong>
             </div>
         </header>
 
@@ -65,6 +76,10 @@
                     <a href="{{ url_for('logout') }}"><i class="fa fa-sign-out" aria-hidden="true"></i>Logout</a>
                 </div>
             </div>
+        </div>
+        <div class="search-section">
+            <input class="search-bar" type="text" placeholder="Search Document">
+            <a href="#"><i class="fa fa-search" aria-hidden="true"></i></a>
         </div>
 
         <section id="dash-2">
@@ -131,9 +146,16 @@
             </div>
         </div>
         </section>
+
+        <div class="actions-grid">
+            <div class="action-card"><span class="emoji">📄</span>Convert Word to PDF</div>
+            <div class="action-card"><span class="emoji">📝</span>Convert PDF to Word</div>
+            <div class="action-card"><span class="emoji">🎤</span>Transcribe file</div>
+            <div class="action-card"><span class="emoji">🖼️</span>Convert PDF to JPG</div>
+        </div>
     </div>
     <button id="btn">↑</button>
 
-        <script src="../static/slide.js"></script>
+    <script src="../static/slide.js"></script>
 </body>
 </html>

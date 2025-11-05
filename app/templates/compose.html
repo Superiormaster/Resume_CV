@@ -16,7 +16,7 @@
                 </svg>
             </button>
             <div style="flex:1">
-                <strong style="color:#5b5b5b; border-radius:5px; padding:4px 6px;">Superior CV</strong>
+                <strong style="color:#5b5b5b; border-radius:5px; padding:4px 6px;"><img src="https://cdn-icons-png.flaticon.com/512/2965/2965358.png" alt="Resume icon">Superior CV</strong>
             </div>
         </header>
 
@@ -89,7 +89,7 @@
                     <div class="exp">
                         <input name="exp_role_{{i}}" placeholder="Role">
                         <input name="exp_company_{{i}}" placeholder="Company">
-                        <input name="exp_dates_{{i}}" placeholder="Dates">
+                        <input name="exp_dates_{{i}}"  type="month" placeholder="Dates">
                         <textarea name="exp_desc_{{i}}" placeholder="Description"></textarea>
                     </div>
                     {% endfor %}
@@ -99,7 +99,7 @@
                     <div class="edu">
                         <input name="edu_degree_{{i}}" placeholder="Degree">
                         <input name="edu_school_{{i}}" placeholder="School">
-                        <input name="edu_years_{{i}}" placeholder="Years">
+                        <input name="edu_years_{{i}}" type="month" placeholder="Years">
                     </div>
                     {% endfor %}
 

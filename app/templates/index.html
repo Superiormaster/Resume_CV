@@ -9,6 +9,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="flash-message {{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
     <div class="app">
         <header>
             <button class="menu-btn" id="openDrawer" aria-controls="mainDrawer" aria-expanded="false" aria-label="Open menu">
@@ -17,7 +28,7 @@
                 </svg>
             </button>
             <div style="flex:1">
-                <strong style="color:#5b5b5b; border-radius:5px; padding:4px 6px;">Superior CV</strong>
+                <strong style="color:#5b5b5b; border-radius:5px; padding:4px 6px;"><img src="https://cdn-icons-png.flaticon.com/512/2965/2965358.png" alt="Resume icon">Superior CV</strong>
             </div>
         </header>
 
@@ -33,7 +44,7 @@
                             <a href="{{ url_for('logout') }}"><i class="fa fa-sign-out" aria-hidden="true"></i>LOGOUT </a>
                         </div>
                     {% else %}
-                        <p class="par"><a href="{{ url_for('login') }}">Login</a> | <a href="{{ url_for('register') }}">Register</a> </p>
+                        <p class="par"><a href="{{ url_for('auth.login') }}">Login</a> | <a href="{{ url_for('auth.register') }}">Register</a> </p>
                     {% endif %}
                     <hr>
                         <p class="par1">Choose a template and compose or preview your resume.</p>
@@ -64,7 +75,7 @@
                 <li><a href="#share" data-action="share"><span class="icon" aria-hidden>⇪</span>Share</a></li>
                 <li><a href="#contact" data-action="contact"><span class="icon" aria-hidden>✉️</span>Contact us</a></li>
                 <li><a href="#privacy" data-action="privacy"><span class="icon" aria-hidden>🔒</span>Privacy policy</a></li>
-                <li><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out" aria-hidden="true"></i>Logout</a></li>
+                <li><a href="{{ url_for('auth.logout') }}"><i class="fa fa-sign-out" aria-hidden="true"></i>Logout</a></li>
             </ul>
 
             <div class="section-title">Premium</div>

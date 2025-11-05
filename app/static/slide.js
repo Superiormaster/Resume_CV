@@ -24,3 +24,16 @@ window.onscroll = () => {
 };
 
 btn.onclick = () => window.scrollTo({ top:0, behavior: "smooth"});
+
+  const togglePassword = document.querySelector('#togglePassword');
+  const password = document.querySelector('#password');
+
+  togglePassword.addEventListener('click', function () {
+    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+    password.setAttribute('type', type);
+
+    // toggle the icon between eye and eye-slash
+    this.classList.toggle('fa-eye-slash');
+
+    this.style.color = type === 'password' ? '#d4af37' : '#f3d07a';
+  });
