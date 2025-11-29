@@ -1,11 +1,10 @@
 # my-first-project
 
-This is also my firstt real web app from my one month class
+This is also my first real web app from my one month class
 
 # Resume Builder (Flask) — Full Project
 
 Features:
-- User registration/login (Flask-Login + SQLite)
 - Live preview of resume using AJAX and iframe
 - Multiple templates (two templates included)
 - Save resumes to user accounts (stored in DB)
