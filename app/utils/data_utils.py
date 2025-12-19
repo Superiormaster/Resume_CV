@@ -1,3 +1,5 @@
+from docx import Document
+import io
 
 def generate_docx(data):
     doc = Document()

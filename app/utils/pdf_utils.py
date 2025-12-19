@@ -1,3 +1,8 @@
+import io
+import os
+from config import BASE_DIR
+from flask import render_template
+from weasyprint import HTML, CSS
 
 def generate_pdf_weasyprint(data):
     """

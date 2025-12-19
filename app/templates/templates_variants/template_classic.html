@@ -36,8 +36,13 @@
 </head>
 <body>
     <div class="header">
+      {% if data.photo_url %}
+        <img class="profile" src="{{ data.photo_url }}" alt="Photo">
+      {% elif data._photo_for_pdf %}
+        <img class="profile" src="{{ data._photo_for_pdf }}" alt="Photo">
+      {% endif %}
         <div class="name">{{ data.full_name }}</div>
-        <div class="contact">{{ data.email }} . {{ data.phone }} . {{ data.website }}</div>
+        <div class="contact">{{ data.email }} . {{ data.phone }} . {{ data.website }} . {{ data.linkedin }}</div>
     </div>
 
     <div class="section">

@@ -61,6 +61,11 @@
 <body>
     <div class="container">
         <aside class="sidebar">
+          {% if data.photo_url %}
+            <img class="profile" src="{{ data.photo_url }}" alt="Photo">
+          {% elif data._photo_for_pdf %}
+            <img class="profile" src="{{ data._photo_for_pdf }}" alt="Photo">
+          {% endif %}
             <div class="section">
                 <div class="name">{{ data.full_name }}</div>
                 <div class="role">{{ data.title }}</div>

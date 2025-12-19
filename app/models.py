@@ -1,41 +1,48 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
+# app/models.py
 from datetime import datetime
-from app.extensions import login_manager, db
-from flask_login import LoginManager, login_user, login_required, current_user, UserMixin, logout_user
+from .extensions import db
+from sqlalchemy import JSON
 
-DATABASE_URL = "sqlite:///instance/database.db"
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-class User(Base, UserMixin):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    email = Column(String(200), unique=True, nullable=False)
-    password_hash = Column(String(200), nullable=False)
-    name = Column(String(200), nullable=True)
-    verified = Column(Boolean, default=False)
-
-class Resume(Base):
+class Resume(db.Model):
     __tablename__ = "resumes"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    title = Column(String(200))
-    template = Column(String(200))
-    data_json = Column(Text)
-    html_preview = Column(Text)
-    pdf_path = Column(String(500))
-    created_at = Column(DateTime, default=datetime.utcnow)
 
-class UploadedFile(Base):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200))
+    template = db.Column(db.String(200))
+    data_json = db.Column(db.Text)
+    html_preview = db.Column(db.Text)
+    pdf_path = db.Column(db.String(500))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    experience = db.Column(JSON, default=list)
+    education = db.Column(JSON, default=list)
+
+class UploadedFile(db.Model):
     __tablename__ = "uploads"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    filename = Column(String(255), nullable=False)
-    filepath = Column(String(500), nullable=False)
-    uploaded_at = Column(DateTime, default=datetime.utcnow)
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), nullable=False)
+    filepath = db.Column(db.String(500), nullable=False)
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class ContactMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200))
+    email = db.Column(db.String(200))
+    message = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    resolved = db.Column(db.Boolean, default=False)
+
+class Rating(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    stars = db.Column(db.Integer)  # 1-5
+    comment = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class AppSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email_notifications = db.Column(db.Boolean, default=True)
+    contact_email = db.Column( db.Text, nullable=True)
+    privacy_policy = db.Column( db.Text, nullable=True)
+    premium_policy = db.Column( db.Text, nullable=True)
+    share_button = db.Column( db.Text, nullable=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

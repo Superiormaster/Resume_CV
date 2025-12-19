@@ -1,88 +1,90 @@
-from flask import Blueprint
-from flask_login import login_required, current_user
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+import os
+import time
+from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file, current_app
+from werkzeug.utils import secure_filename
 from app.extensions import db
 from app.models import UploadedFile
 
 upload_bp = Blueprint('upload', __name__, url_prefix='/upload')
 
+# Allowed extensions
+def allowed_file(filename):
+    allowed = {"pdf", "doc", "docx", "png", "jpg", "jpeg"}
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed
+
+# -------------------
+# Upload Route
+# -------------------
 @upload_bp.route("/upload", methods=["POST"])
-@login_required
 def upload_file():
-    """Upload a resume file."""
     if "file" not in request.files:
         flash("No file part.", "danger")
-        return redirect(request.referrer or url_for("dashboard"))
+        return redirect(request.referrer or url_for("dashboard_bp.dashboard"))
 
     file = request.files["file"]
 
     if file.filename == "":
         flash("No file selected.", "warning")
-        return redirect(request.referrer or url_for("dashboard"))
+        return redirect(request.referrer or url_for("dashboard_bp.dashboard"))
 
     if not allowed_file(file.filename):
         flash("Unsupported file type.", "danger")
-        return redirect(request.referrer or url_for("dashboard"))
+        return redirect(request.referrer or url_for("dashboard_bp.dashboard"))
 
+    # Generate unique filename
     filename = f"{int(time.time())}_{secure_filename(file.filename)}"
-    save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    file.save(save_path)
+    
+    # Correct RELATIVE PATH
+    rel_path = f"static/uploads/{filename}"
+    full_path = os.path.join(current_app.root_path, rel_path)
 
-    db = SessionLocal()
-    try:
-        uploaded = UploadedFile(
-            user_id=current_user.id,
-            filename=filename,
-            filepath=save_path
-        )
-        db.add(uploaded)
-        db.commit()
-        flash("File uploaded successfully!", "success")
-    except Exception as e:
-        db.rollback()
-        flash(f"Error saving upload: {e}", "danger")
-    finally:
-        db.close()
+    # Ensure folder exists
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
 
-    return redirect(url_for("dashboard"))
+    # Save file
+    file.save(full_path)
 
+    # Save DB record
+    uploaded = UploadedFile(filename=filename, filepath=rel_path)
+    db.session.add(uploaded)
+    db.session.commit()
+
+    flash("File uploaded successfully!", "success")
+    return redirect(url_for("dashboard_bp.dashboard"))
+
+# -------------------
+# Download Route
+# -------------------
 @upload_bp.route("/uploads/download/<int:file_id>")
-@login_required
 def download_uploaded(file_id):
-    db = SessionLocal()
-    try:
-        f = db.query(UploadedFile).filter_by(id=file_id, user_id=current_user.id)
-        if not f:
-            flash("File not found.", "danger")
-            return redirect(request.referrer or url_for("dashboard"))
+    file = UploadedFile.query.get(file_id)
 
-        return send_file(f.filepath, as_attachment=True, download_name=f.filename)
-    except Exception as e:
-        flash(f"Error downloading file: {e}", "danger")
-        return redirect(request.referrer or url_for("dashboard"))
-    finally:
-        db.close()
+    if not file:
+        flash("File not found.", "danger")
+        return redirect(request.referrer or url_for("dashboard_bp.dashboard"))
 
+    full_path = os.path.join(current_app.root_path, file.filepath)
+    return send_file(full_path, as_attachment=True, download_name=file.filename)
+
+# -------------------
+# Delete Route
+# -------------------
 @upload_bp.route("/uploads/delete/<int:file_id>")
-@login_required
 def delete_uploaded(file_id):
-    db = SessionLocal()
-    try:
-        f = db.query(UploadedFile).filter_by(id=file_id, user_id=current_user.id).first()
-        if not f:
-            flash("File not found.", "danger")
-            return redirect(request.referrer or url_for("dashboard"))
+    file = UploadedFile.query.get(file_id)
 
-        if os.path.exists(f.filepath):
-            os.remove(f.filepath)
+    if not file:
+        flash("File not found.", "danger")
+        return redirect(request.referrer or url_for("dashboard_bp.dashboard"))
 
-        db.delete(f)
-        db.commit()
-        flash("File deleted successfully!", "success")
-    except Exception as e:
-        db.rollback()
-        flash(f"Error deleting file: {e}", "danger")
-    finally:
-        db.close()
+    full_path = os.path.join(current_app.root_path, file.filepath)
 
-    return redirect(url_for("dashboard"))
+    # Remove file
+    if os.path.exists(full_path):
+        os.remove(full_path)
+
+    db.session.delete(file)
+    db.session.commit()
+
+    flash("File deleted successfully!", "success")
+    return redirect(url_for("dashboard_bp.dashboard"))

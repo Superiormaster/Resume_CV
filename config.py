@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.dirname( __file__))
 DB_PATH = os.path.join(BASE_DIR, 'data', 'app.db')
@@ -9,15 +12,14 @@ class BaseConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', os.path.join(BASE_DIR, 'uploads'))
     RESUME_FOLDER = os.environ.get('RESUME_FOLDER', os.path.join(BASE_DIR, 'resumes'))
-    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
+    
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_PORT = 587
     MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-
-
-    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
-    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_USERNAME')
 
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024
 
