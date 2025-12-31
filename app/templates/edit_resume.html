@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <div class="display1">
+
+    <h2>Edit {{ data.full_name }}_Resume</h2>
+
+    <div class="display">
+
+        <div class="left">
+
+            <form method="post" id="resumeForm" action="{{ url_for('resume.edit_resume', resume_id=resume_id) }}" enctype="multipart/form-data">
+              <input type="hidden" name="template" value="{{ resume.template }}">
+
+                <label>Photo</label>
+                {% if data.photo_url %}
+                    <p>Current photo:</p>
+                    <img src="{{ data.photo_url }}" width="120" class="rounded mb-3">
+                {% endif %}
+                <div class="mb-4">
+                    <input type="file" name="photo" class="form-control">
+                </div>
+
+                <h4>Personal Details</h4>
+                <div class="mb-3">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" name="full_name" class="form-control" 
+                         value="{{ data.full_name }}">
+                </div>
+
+          <div class="mb-3">
+            <label class="form-label">Job Title</label>
+            <input type="text" name="job_title" class="form-control"
+                   value="{{ data.job_title }}">
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control"
+                       value="{{ data.email }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Phone</label>
+                <input type="text" name="phone" class="form-control"
+                       value="{{ data.phone }}">
+            </div>
+        </div>
+
+                <label>Website </label><input name="website" value="{{ data.website }}"><br>
+
+                <label>LinkedIn </label><input name="linkedin" value="{{ data.linkedin }}" placeholder="https://..."><br>
+
+            <div class="mb-3">
+            <label class="form-label">Summary</label>
+            <textarea name="summary" class="form-control" rows="4">{{ data.summary }}</textarea>
+        </div>
+
+        <h4 class="mt-4">Skills</h4>
+        <div class="mb-3">
+            <textarea name="skills" class="form-control" value="{{ data.skills }}" rows="4">{{ data.skills }}</textarea>
+        </div>
+
+        <h4 class="mt-4">Experience</h4>
+        <div class="exp mb-3">
+          {% for i in range(5) %}
+{% set exp = experiences[i] if i < experiences|length else {} %}
+<div class="exp mb-3">
+    <input name="exp_role_{{ i }}" placeholder="Role"
+           value="{{ exp.get('role','') }}">
+
+    <input name="exp_company_{{ i }}" placeholder="Company"
+           value="{{ exp.get('company','') }}">
+
+    <input name="exp_dates_{{ i }}" type="month"
+           value="{{ exp.get('dates','') }}">
+
+    <textarea name="exp_desc_{{ i }}" placeholder="Description">{{ exp.get('desc','') }}</textarea>
+</div>
+{% endfor %}
+        </div>
+
+        <h4 class="mt-4">Education</h4>
+        <div class="edu mb-3">
+
+{% for i in range(3) %}
+{% set edu = educations[i] if i < educations|length else {} %}
+<div class="edu">
+    <input name="edu_degree_{{ i }}" placeholder="Degree"
+           value="{{ edu.get('degree','') }}">
+
+    <input name="edu_school_{{ i }}" placeholder="School"
+           value="{{ edu.get('school','') }}">
+
+    <input name="edu_years_{{ i }}" type="month"
+           value="{{ edu.get('years','') }}">
+</div>
+{% endfor %}
+</div>
+                <div class="btn-primary">
+
+                   <button class="btn btn-primary w-100" type="submit">Save Changes</button>
+                </div>
+
+            </form>
+
+        </div>
+        
+        <div class="right preview-container mt-4">
+          <h4>Live Preview</h4>
+          <iframe id="previewFrame" style="width:100%; height:600px; border:1px solid #ddd;"></iframe>
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+let timeout;
+
+async function updatePreview() {
+  const form = document.getElementById("resumeForm");
+  const data = new FormData(form);
+
+  try {
+    const res = await fetch("{{ url_for('resume.preview') }}", {
+      method: "POST",
+      body: data
+    });
+
+    const json = await res.json();
+    document.getElementById("previewFrame").srcdoc = json.html;
+  } catch (e) {
+    console.error("Preview failed", e);
+  }
+}
+
+document.getElementById("resumeForm").addEventListener("input", () => {
+  clearTimeout(timeout);
+  timeout = setTimeout(updatePreview, 400);
+});
+
+window.addEventListener("load", updatePreview);
+</script>
+
+{% endblock %}

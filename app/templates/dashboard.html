@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="app">
+  <div class="dash">
+    <div id="dash">
+      <h2>Your Resumes</h2>
+      <a href="{{ url_for('resume.templates') }}"><i class="fa fa-plus-circle" aria-hidden="true"></i>Create new resume</a>
+    </div>
+  </div>
+        
+  <div class="search-container">
+    <div class="search-wrapper">
+      <input id="searchInput" class="search-bar" type="text" placeholder="Search Document...">
+      <button id="searchBtn" class="search-btn" aria-label="Search">
+        <i class="fa fa-search"></i>
+      </button>
+      <button id="micBtn" class="mic-btn" aria-label="Voice Search">
+        <i class="fa-solid fa-microphone-lines mic-icon"></i>
+      </button>
+    </div>
+    <div id="searchResults" class="search-results"></div>
+  </div>
+   
+  <section id="dash-2">
+    <div class="dash-2">
+      <div class="nav">
+        <h3>List of resumes</h3>
+        <ul>
+        {% for r in resumes %}
+          <li>
+            <div class="list-item">
+              <div class="resume-info">
+                <strong>{{ r.title }}</strong>
+                <br>
+                <small>{{ r.created_at.strftime("%Y-%m-%d %H:%M") }}</small>
+              </div>
+              <div class="resume-actions">
+                <div>
+                  <a href="{{ url_for('resume.view_resume', resume_id = r.id) }}" target="_blank">View</a>
+                  <a href="{{ url_for('resume.delete_resume', resume_id = r.id) }}">Delete</a>
+                  <a href="{{ url_for('resume.edit_resume', resume_id = r.id) }}">Edit</a>
+                </div>
+                
+                <div class="dropdown">
+                  <div class="three-dots" onclick="toggleDropdown(this)">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <div class="dropdown-content" id="dropdown-content">
+                    <label class="dash-label">Download</label>
+                    <select onchange="downloadResume(this)">
+                      <option value="">Select format</option>
+                      <option value="{{ url_for('resume.download_resume', resume_id=r.id, fmt='pdf') }}">Download PDF</option>
+                      <option value="{{ url_for('resume.download_resume', resume_id=r.id, fmt='docx') }}">Download DOCX</option>
+                      <option value="{{ url_for('resume.download_resume', resume_id=r.id, fmt='txt') }}">Download TXT</option>
+                      <option value="{{ url_for('resume.download_resume', resume_id=r.id, fmt='json') }}">Download JSON</option>
+                    </select>
+                    
+                    <label>Export Resume</label>
+                  </div>
+                </div>
+                
+              </div>
+            </div>
+          </li>
+          {% else %}
+          <li>No resumes yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="actions-grid">
+    <div class="action-card"><span class="emoji">📄</span>Convert Word to PDF</div>
+    <div class="action-card"><span class="emoji">📝</span>Convert PDF to Word</div>
+    <div class="action-card"><span class="emoji">🎤</span>Transcribe file</div>
+    <div class="action-card"><span class="emoji">🖼️</span>Convert PDF to JPG</div>
+  </div>
+</div>
+
+<script>
+function toggleDropdown(dot) {
+  const currentDropdown = dot.nextElementSibling;
+
+  // Close all other dropdowns
+  document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+    if (dropdown !== currentDropdown) {
+      dropdown.style.display = 'none';
+    }
+  });
+
+  // Toggle this dropdown
+  currentDropdown.style.display =
+    currentDropdown.style.display === 'block' ? 'none' : 'block';
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+  if (!event.target.closest('.dropdown')) {
+    document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+      dropdown.style.display = 'none';
+    });
+  }
+});
+
+function downloadResume(select) {
+  const url = select.value;
+  if (url) {
+    window.location.href = url;
+    // Close parent dropdown
+    select.closest('.dropdown-content').style.display = 'none';
+  }
+}
+</script>
+  
+{% endblock %}
