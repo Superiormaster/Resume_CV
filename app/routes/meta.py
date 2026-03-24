@@ -1,7 +1,7 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 import traceback
 from flask_mail import Message
-from app.extensions import db, mail
+from app.extensions import db
 from app.models import ContactMessage, Rating, AppSettings
 from sqlalchemy import func
 
