@@ -78,7 +78,3 @@ class AppSettings(db.Model):
     terms_conditions = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-@login_manager.user_loader
-def load_user(user_id):
-    return Admin.query.get(int(user_id))
