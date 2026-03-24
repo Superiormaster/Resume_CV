@@ -10,6 +10,6 @@ def dashboard():
     uploads = UploadedFile.query.filter_by().order_by(UploadedFile.uploaded_at.desc()).all()
 
     if not resumes:
-        flash("You haven't created any resumes yet.", "info")
+        flash("No resumes yet.", "info")
 
     return render_template('dashboard.html', resumes=resumes, uploads=uploads)

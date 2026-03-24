@@ -1,60 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: "Segoe UI", sans-serif;
-            padding: 40px;
-            background: white;
-            color: #222;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .name {
-            font-size: 32px;
-            font-weight: 700;
-        }
+<style>
+body{
+    font-family:"Segoe UI",sans-serif;
+    padding:40px;
+    background:white;
+    color:#222;
+}
 
-        .title {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: #555;
-        }
+.header{
+    display:flex;
+    align-items:center;
+    gap:20px;
+}
 
-        .section-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-top: 30px;
-            border-bottom: 2px solid #ddd;
-        }
+.profile{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    object-fit:cover;
+}
 
-        .item { margin-bottom: 10px; }
-    </style>
+.name{
+    font-size:32px;
+    font-weight:700;
+}
+
+.title{
+    font-size:18px;
+    margin-bottom:6px;
+    color:#555;
+}
+
+.contact{
+    font-size:14px;
+    color:#777;
+}
+
+.section{
+    margin-top:30px;
+}
+
+.section-title{
+    font-size:20px;
+    font-weight:600;
+    border-bottom:2px solid #ddd;
+    padding-bottom:4px;
+    margin-bottom:10px;
+}
+
+.item{
+    margin-bottom:12px;
+}
+</style>
 </head>
+
 <body>
 
-<div class="name">{{ data.full_name }}</div>
-<div class="title">{{ data.title }}</div>
+<!-- HEADER -->
+<div class="header">
 
+{% if data.photo_dataurl %}
+<img class="profile" src="{{ data.photo_dataurl }}">
+{% elif data.photo_url %}
+<img class="profile" src="{{ data.photo_url }}">
+{% elif data._photo_for_pdf %}
+<img class="profile" src="{{ data._photo_for_pdf }}">
+{% endif %}
+
+<div>
+<div class="name">{{ data.full_name }}</div>
+
+{% if data.title %}
+<div class="title">{{ data.title }}</div>
+{% endif %}
+
+<div class="contact">
+{% if data.email %}{{ data.email }}{% endif %}
+{% if data.phone %} • {{ data.phone }}{% endif %}
+{% if data.website %}<br>{{ data.website }}{% endif %}
+{% if data.linkedin %}<br>{{ data.linkedin }}{% endif %}
+</div>
+
+</div>
+
+</div>
+
+
+<!-- SUMMARY -->
+{% if data.summary %}
+<div class="section">
 <div class="section-title">Summary</div>
 <p>{{ data.summary }}</p>
+</div>
+{% endif %}
 
+
+<!-- SKILLS -->
+{% if data.skills %}
+<div class="section">
 <div class="section-title">Skills</div>
+
 <ul>
-    {% for skill in data.skills %}
-        <li>{{ skill }}</li>
-    {% endfor %}
+{% for skill in data.skills %}
+{% if skill %}
+<li>{{ skill }}</li>
+{% endif %}
+{% endfor %}
 </ul>
 
+</div>
+{% endif %}
+
+
+<!-- EXPERIENCE -->
+{% if data.experience %}
+<div class="section">
+
 <div class="section-title">Experience</div>
+
 {% for exp in data.experience %}
-    <div class="item">
-        <strong>{{ exp.role }} - {{ exp.company }}</strong><br>
-        <em>{{ exp.dates }}</em>
-        <p>{{ exp.description }}</p>
-    </div>
+{% if exp.role %}
+
+<div class="item">
+
+<strong>
+{{ exp.role }}
+{% if exp.company %} - {{ exp.company }}{% endif %}
+</strong>
+
+<br>
+
+{% if exp.dates %}
+<em>{{ exp.dates }}</em>
+{% endif %}
+
+{% if exp.description %}
+<p>{{ exp.description }}</p>
+{% elif exp.desc %}
+<p>{{ exp.desc }}</p>
+{% endif %}
+
+</div>
+
+{% endif %}
 {% endfor %}
+
+</div>
+{% endif %}
+
+
+<!-- EDUCATION -->
+{% if data.education %}
+<div class="section">
+
+<div class="section-title">Education</div>
+
+{% for edu in data.education %}
+{% if edu.degree %}
+
+<div class="item">
+
+<strong>{{ edu.degree }}</strong>
+
+{% if edu.school %}
+ - {{ edu.school }}
+{% endif %}
+
+{% if edu.years %}
+ ({{ edu.years }})
+{% endif %}
+
+</div>
+
+{% endif %}
+{% endfor %}
+
+</div>
+{% endif %}
 
 </body>
 </html>

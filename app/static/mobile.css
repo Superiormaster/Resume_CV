@@ -1,4 +1,4 @@
-:root{
+::root{
   --bg: #ffffff;                 /* white */
   --muted: #f6f6f6;
   --text: #0b0b0b;               /* black */
@@ -28,7 +28,6 @@
 }
 
 html,body {
-  height: 100%;
   background: var(--bg);
   color: var(--text);
   font-family: var(--ui-font);
@@ -36,19 +35,22 @@ html,body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Basic Styling */
-@media (max-width: 599px) { 
-  body{
-    margin: 0;
-    line-height: 1.45;
-    font-size: 15px;
-    height: 100%;
-    padding: 12px;
-    -webkit-font-kernel: normal;
+body{
+  -webkit-font-kernel: normal;
+}
+
+/* Dashboard Page */
+  #dash{
+    padding: 0 1rem;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    align-content: center;
+    gap: 6px;
+    font-size: 16px;
+    font-weight: 600;
   }
-  
+
+/* Basic Styling */
   a {
     color: var(--brand);
     text-decoration: none;
@@ -59,20 +61,7 @@ html,body {
     color: var(--brand-dark);
     text-decoration: underline;
   }
-  
-  button{
-    padding: 6px 10px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    cursor: pointer;
-    font-size: .5rem;
-    font-weight: 600;
-    user-select: none;
-    color: #fff;
-    background: linear-gradient(180deg,var(--brand), var(--brand-dark));
-    transition: all var(--transition);
-  }
-  
+
   button:hover{
     transform: translateY(-2px); box-shadow: var(--shadow-md);
   }
@@ -80,14 +69,12 @@ html,body {
   h1{
     text-align: center;
     margin: 0 0 8px 0;
-    font-size: 1.5rem;
     color: #9aa4b2;
   }
   
   h2{
     color: #333;
     text-align: center;
-    font-size: 18px;
   }
   
   h3{
@@ -95,7 +82,6 @@ html,body {
     background: var(--brand);
     border-radius: 10px;
     padding: 0.5rem 1rem;
-    font-size: 13px;
     color: var(--muted);
   }
   
@@ -104,23 +90,6 @@ html,body {
   }
   
   /* Heading */
-  
-  .app{
-    min-height: 100vh;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  header{
-    height: 56px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
   
   header img{
     width: 20px;
@@ -131,7 +100,6 @@ html,body {
     appearance: none;
     border: none;
     padding: 8px;
-    background: #9aa4b2;
     font-size: 14px;
     cursor: pointer;
     border-radius: 8px;
@@ -148,203 +116,11 @@ html,body {
     box-shadow: var(--shadow-sm);
   }
   
-  /* Pull-Out Dashboard */
-  
-  .overlay{
-    position: fixed;
-    inset: 0;
-    opacity: 0;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    background: rgba(2,6,23,0.55);
-    transition: opacity var(--transition);
-    visibility: hidden;
-    z-index: 999;
-  }
-  
-  .overlay[data-hidden="false"]{
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-  
-  .drawer{
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100%;
-    max-width: 100%;
-    width: calc(250px);
-    transform: translateX(-110%);
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    background: var(--bg);
-    box-shadow: var(--shadow);
-    transition: transform var(--transition);
-    will-change: transform;
-  }
-
-  .drawer[aria-hidden="false"]{
-    transform: translateX(0);
-  }
-  
-  .drawer__header{
-    padding: 20px;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    border-bottom: 1px solid #efefef;
-    background: linear-gradient(180deg, rgba(0,0,0,0.03), transparent);
-  }
-  
-  .avatar{
-    width: 56px;
-    height: 56px;
-    display: grid;
-    place-items: center;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--brand), #dde9);
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  
-  .avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  
-  .drawer__title{
-    letter-spacing: 0.2px;
-    font-weight: 600;
-    font-size: 18px;
-  }
-  
-  .drawer__subtitle{
-    font-size: 18px;
-    color: #6b7280;
-    margin-top: 4px;
-  }
-  
-  .drawer__body{
-    overflow: auto;
-    flex: 1;
-    padding: 12px;
-    margin-left: 15px;
-  }
-  
-  .section-title{
-    margin-top: 8px;
-    font-size: 13px;
-    color: #8b95a1;
-    padding: 12px 4px 6px;
-  }
-  
-  .nav-list1{
-    list-style: none;
-    width: 150px;
-    height: 120px;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    gap: 6px;
-    flex-direction: column;
-    border-radius: 0;
-    background: none;
-  }
-  
-  .nav-list1 a{
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    font-size: 13px;
-    font-weight: 600;
-    transition: background var(--transition), transform var(--transition);
-  }
-  
-  .nav-list{
-    list-style: none;
-    width: 150px;
-    height: 230px;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    gap: 6px;
-    flex-direction: column;
-    border-radius: 0;
-    background: none;
-  }
-  
-  .nav-list a{
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    font-size: 12px;
-    color: var(--text);
-    font-weight: 600;
-    transition: background var(--transition), transform var(--transition);
-  }
-  
-  .nav-list a:active{
-    transform: translateY(1px);
-  }
-  
-  .nav-list a:focus{
-    outline: 2px solid rgba(2,6,23,0.06);
-    box-shadow: 0 0 0 4px rgba(212,175,55,0.07);
-  }
-  
-  .icon{
-    width: 20px;
-    height: 20px;
-    display: inline-grid;
-    place-items: center;
-    border-radius: 8px;
-    flex-shrink: 0;
-  }
-  
-  .premium{
-    padding: 10px;
-    gap: 10px;
-    display: flex;
-    border-top: 1px solid #f2f2f2;
-  }
-  
-  .premium .crown{
-    font-size: 17px;
-    color: var(--accent1);
-  }
-
-  .get{
-    font-size: 12px;
-  }
-  
-  .up-prem1{
-    font-size: 10px;
-  }
-  
-  .visually-hidden{
-    position: absolute!important;
-    height: 1px;
-    width: 1px;
-    overflow: hidden;
-    white-space: no-wrap;
-    border: 0;
-    margin: -1px;
-    padding: 0;
-    clip: rect(1px,1px,1px,1px);
-  }
-  
   /* App Settings */
   form {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
-    
+
   .settings-container {
     padding: 10px;
     max-width: 400px;
@@ -621,10 +397,6 @@ html,body {
   
   /* Index Section */
   
-  main{
-    padding: 18px;
-  }
-  
   .container{
     max-width: var(--max-width);
     margin: 18px auto;
@@ -657,29 +429,10 @@ html,body {
   
   /* Dashboard */
   
-  #dash{
-    padding: 0 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-content: center;
-    gap: 6px;
-    font-size: 16px;
-    font-weight: 600;
-  }
-  
   #dash-2{
     display: flex;
     align-content: center;
     justify-content: space-between;
-  }
-  
-  .dash{
-    justify-content: center;
-    margin-bottom: 10px;
-  }
-
-  #dash h2, a{
-    font-size: 15px;
   }
   
   .dash-2{
@@ -688,51 +441,6 @@ html,body {
     height: 100%;
     padding: 2rem 1rem;
     width: 100%;
-  }
-  
-  .three-dots {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 4px;
-    height: 16px;
-    cursor: pointer;
-  }
-  
-  .three-dots span {
-    display: block;
-    width: 4px;
-    height: 4px;
-    background-color: #000;
-    border-radius: 50%;
-  }
-  
-  .dropdown {
-    position: relative;
-    display: inline-block;
-  }
-  
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 160px;
-    right: 12px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    padding: 12px 16px;
-    border-radius: 15px;
-    z-index: 1;
-  }
-  
-  .dropdown-content select {
-    width: 100%;
-  }
-  
-  .actions-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding: 15px;
   }
 
   .action-card {
@@ -754,25 +462,6 @@ html,body {
     font-size: 20px;
     display: block;
     margin-bottom: 5px;
-  }
-
-  .nav{
-    justify-content: center;
-    width: 100%;
-  }
-  
-  ul{
-    list-style: none;
-    color: #111;
-    background: #eee;
-    padding: 15px 10px;
-    width: 300px;
-    height: 100%;
-    border-radius: 10px 30px 20px;
-  }
-  
-  ul li{
-    font-size: 14px;
   }
   
   .nav h3{
@@ -812,12 +501,6 @@ html,body {
     border-radius: 10px;
   }
   
-  .resume-actions {
-    gap: 0.5rem;
-    display: flex;
-    justify-content: space-between;
-  }
-  
   /* Compose Section */
   
   .display1{
@@ -844,8 +527,6 @@ html,body {
     border: 2px solid var(--accent1);
     padding: 1rem 2.5rem;
     background: rgba(175, 148, 148, 0.1);
-    height: 70vh;
-    width: 300px;
     border-radius: 10px;
   }
   
@@ -914,4 +595,3 @@ html,body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     display: none;
   }
-}

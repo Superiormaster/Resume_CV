@@ -1,91 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Resume Builder{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='tablet.css') }}">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>{% block title %}Resume Builder{% endblock %}</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+<link rel="icon" href="{{ url_for('static', filename='images/Resume.png') }}">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}">
+
 </head>
-<body>
+
+<body class="bg-gray-100 min-h-screen text-gray-800">
 
 {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class="flash-container">
-      {% for category, message in messages %}
-        <div class="flash-message {{ category }}">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-    {% endif %}
+{% if messages %}
+<div class="fixed top-20 right-4 z-50 space-y-2">
+{% for category, message in messages %}
+<div class="px-4 py-2 rounded-lg shadow bg-white border text-sm">
+{{ message }}
+</div>
+{% endfor %}
+</div>
+{% endif %}
 {% endwith %}
 
-<div class="app">
-    <header>
-        <button class="menu-btn" id="openDrawer" aria-controls="mainDrawer" aria-expanded="false" aria-label="Open menu">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-        </button>
-        <div style="flex:1">
-            <strong style="color:#5b5b5b; border-radius:5px; padding:4px 6px;">
-                <img src="https://cdn-icons-png.flaticon.com/512/2965/2965358.png" alt="Resume icon"> Superior CV
-            </strong>
-        </div>
-    </header>
+<div class="max-w-7xl mx-auto w-full">
 
-    <main id="pageMain" tabindex="-1">
-        {% block content %}{% endblock %}
-    </main>
+<!-- NAVBAR -->
+
+<header class="fixed top-0 w-full bg-white border-b shadow-sm z-50">
+
+<div class="flex items-center px-4 py-3">
+
+<button id="openDrawer" class="mr-4 text-gray-700">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+<path d="M3 6h18M3 12h18M3 18h18"
+stroke="currentColor"
+stroke-width="2"
+stroke-linecap="round"/>
+</svg>
+</button>
+
+<div class="flex items-center gap-3">
+
+<img src="{{ url_for('static', filename='images/Resume.png') }}"
+class="w-12 h-10 rounded object-cover">
+
+<span class="font-bold text-lg text-gray-700 font-mono">
+Resume CV
+</span>
+
 </div>
 
-<div class="overlay" id="drawerOverlay" tabindex="-1" data-hidden="true"></div>
+</div>
 
-<aside class="drawer" id="mainDrawer" role="dialog" aria-modal="true" aria-label="Main menu" aria-hidden="true">
-    <div class="drawer__header">
-        <div class="avatar" aria-hidden="true"><img src="{{ url_for('static', filename='/images/Resume.png') }}" alt="Superior CV logo">
-        </div>
-        <div>
-            <div class="drawer__title">Superior CV</div>
-            <div class="drawer__subtitle">Professional CV</div>
-        </div>
-    </div>
+</header>
 
-    <div class="drawer-body">
-      <ul class="nav-list1">
-      <div class="section-title">Navigation</div>
-      <li><a href="{{ url_for('main.home') }}"><i class="fa fa-home" aria-hidden="true"></i>Home</a></li>
-      <li><a href="{{ url_for('dashboard_bp.dashboard') }}"><i class="fa fa-dashboard"></i> Dashboard</a></li>
-            <li><a href="{{ url_for('resume.templates') }}"><i class="fa fa-file-alt"></i> Compose Resume</a></li>
-            </ul>
-            
-        <ul class="nav-list" id="drawerNav">
-            <div class="section-title">Settings</div>
-            <li><a href="{{ url_for('meta_bp.settings') }}" data-action="settings"><span class="icon" aria-hidden>⚙️</span> Settings</a></li>
-            <li><a href="{{ url_for('meta_bp.rate') }}" data-action="rate"><span class="icon" aria-hidden>⭐</span> Rate us</a></li>
-            <li><a href="{{ url_for('meta_bp.share') }}" data-action="share"><span class="icon" aria-hidden>⇪</span> Share</a></li>
-            <li><a href="{{ url_for('meta_bp.contact') }}" data-action="contact"><span class="icon" aria-hidden>✉️</span> Contact us</a></li>
-          </ul>
+<!-- MAIN -->
 
-            <div class="section-title">Premium</div>
-            <div class="premium" style="align-items:center;">
-                <div class="crown" aria-hidden>👑</div>
-                <div style="flex:1">
-                    <div style="font-weight:700" class="up-prem">Upgrade to Premium</div>
-                    <div style="font-size:13px; color:#6b7280" class="up-prem1">Unlock our premium features</div>
-                </div>
-                <div>
-                    <a href="{{ url_for('meta_bp.premium') }}" class="get" style="display:inline-block; padding:8px 10px; border-radius:10px; background:linear-gradient(90deg,#d4af37,#f3d07a); font-weight:700; color:#082031">Get</a>
-                </div>
-            </div>
-    </div>
+<main class="pt-20 px-4 max-w-6xl mx-auto">
+
+{% block content %}{% endblock %}
+
+</main>
+
+</div>
+
+
+<!-- OVERLAY -->
+
+<div id="drawerOverlay"
+class="fixed inset-0 bg-black/40 hidden z-40"></div>
+
+
+<!-- DRAWER -->
+
+<aside id="mainDrawer"
+class="fixed left-0 top-0 h-full w-72 bg-white shadow-lg transform -translate-x-full transition duration-300 z-50">
+
+<div class="p-4 border-b flex items-center gap-3">
+
+<img src="{{ url_for('static', filename='images/Resume.png') }}"
+class="w-12 h-12 rounded">
+
+<div>
+<div class="font-bold">Superior CV</div>
+<div class="text-sm text-gray-500">Professional CV</div>
+</div>
+
+</div>
+
+
+<div class="p-4 space-y-6">
+
+
+<!-- Navigation -->
+
+<div>
+
+<div class="text-xs uppercase text-gray-400 mb-2">
+Navigation
+</div>
+
+<ul class="space-y-2">
+
+<li>
+<a href="{{ url_for('main.home') }}"
+class="flex items-center gap-2 p-2 rounded hover:bg-gray-100">
+
+<i class="fa fa-home"></i> Home
+</a>
+</li>
+
+<li>
+<a href="{{ url_for('dashboard_bp.dashboard') }}"
+class="flex items-center gap-2 p-2 rounded hover:bg-gray-100">
+
+<i class="fa fa-dashboard"></i> Dashboard
+</a>
+</li>
+
+<li>
+<a href="{{ url_for('resume.templates') }}"
+class="flex items-center gap-2 p-2 rounded hover:bg-gray-100">
+
+<i class="fa fa-file-alt"></i> Compose Resume
+</a>
+</li>
+
+</ul>
+
+</div>
+
+
+<!-- Settings -->
+
+<div>
+
+<div class="text-xs uppercase text-gray-400 mb-2">
+Settings
+</div>
+
+<ul class="space-y-2">
+
+<li>
+<a href="{{ url_for('meta_bp.settings') }}"
+class="flex items-center gap-2 p-2 rounded hover:bg-gray-100">
+⚙️ Settings
+</a>
+</li>
+
+<li>
+<a href="{{ url_for('meta_bp.rate') }}"
+class="flex items-center gap-2 p-2 rounded hover:bg-gray-100">
+⭐ Rate us
+</a>
+</li>
+
+<li>
+<a href="{{ url_for('meta_bp.share') }}"
+class="flex items-center gap-2 p-2 rounded hover:bg-gray-100">
+⇪ Share
+</a>
+</li>
+
+<li>
+<a href="{{ url_for('meta_bp.contact') }}"
+class="flex items-center gap-2 p-2 rounded hover:bg-gray-100">
+✉️ Contact us
+</a>
+</li>
+
+</ul>
+
+</div>
+
+
+<!-- Premium -->
+
+<div class="bg-yellow-50 border rounded-xl p-4 flex items-center gap-3">
+
+<div class="text-xl">👑</div>
+
+<div class="flex-1">
+
+<div class="font-semibold">
+Upgrade to Premium
+</div>
+
+<div class="text-sm text-gray-500">
+Unlock premium features
+</div>
+
+</div>
+
+<a href="{{ url_for('meta_bp.premium') }}"
+class="px-3 py-2 bg-yellow-400 rounded-lg font-semibold text-sm">
+
+Get
+
+</a>
+
+</div>
+
+</div>
+
 </aside>
 
-<button id="btn">↑</button>
+
+<button id="btn"
+class="fixed bottom-6 right-6 bg-gray-800 text-white px-3 py-2 rounded-full shadow">
+
+↑
+
+</button>
+
+
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+
 <script src="{{ url_for('static', filename='slide.js') }}"></script>
+
 {% block scripts %}{% endblock %}
 
 </body>

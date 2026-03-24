@@ -1,97 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: "Roboto", sans-serif;
-            background: #ffffff;
-            padding: 40px;
-            color: #222;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .top {
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 2px solid #eaeaea;
-            padding-bottom: 15px;
-        }
+<style>
+body{
+    font-family:"Roboto",sans-serif;
+    background:#ffffff;
+    padding:40px;
+    color:#222;
+    line-height:1.5;
+}
 
-        .name {
-            font-size: 30px;
-            font-weight: 800;
-        }
+.top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:2px solid #eaeaea;
+    padding-bottom:15px;
+    gap:20px;
+}
 
-        .contact {
-            text-align: right;
-            font-size: 14px;
-            color: #707070;
-        }
+.resume-photo{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    object-fit:cover;
+}
 
-        .section {
-            margin-top: 28px;
-        }
+.name{
+    font-size:30px;
+    font-weight:800;
+}
 
-        .section-title {
-            font-size: 19px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
+.title{
+    font-size:16px;
+    color:#555;
+}
 
-        .item { margin-bottom: 15px; }
-        .role { font-weight: 600; }
-    </style>
+.contact{
+    text-align:right;
+    font-size:14px;
+    color:#707070;
+}
+
+.section{
+    margin-top:28px;
+}
+
+.section-title{
+    font-size:19px;
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+.item{
+    margin-bottom:15px;
+}
+
+.role{
+    font-weight:600;
+}
+
+ul{
+    padding-left:18px;
+}
+</style>
 </head>
+
 <body>
 
+<!-- HEADER -->
 <div class="top">
-    <div>
-        <div class="name">{{ data.full_name }}</div>
-        <div>{{ data.title }}</div>
-    </div>
-    <div class="contact">
-        {{ data.email }}<br>
-        {{ data.phone }}<br>
-        {{ data.website }}<br>
-        {{ data.linkedin }}
-    </div>
+
+{% if data.photo_dataurl %}
+<img src="{{ data.photo_dataurl }}" class="resume-photo">
+{% elif data.photo_url %}
+<img src="{{ data.photo_url }}" class="resume-photo">
+{% elif data._photo_for_pdf %}
+<img src="{{ data._photo_for_pdf }}" class="resume-photo">
+{% endif %}
+
+<div>
+    <div class="name">{{ data.full_name }}</div>
+    {% if data.title %}
+    <div class="title">{{ data.title }}</div>
+    {% endif %}
 </div>
 
+<div class="contact">
+    {% if data.email %}{{ data.email }}<br>{% endif %}
+    {% if data.phone %}{{ data.phone }}<br>{% endif %}
+    {% if data.website %}{{ data.website }}<br>{% endif %}
+    {% if data.linkedin %}{{ data.linkedin }}{% endif %}
+</div>
+
+</div>
+
+
+<!-- SUMMARY -->
+{% if data.summary %}
 <div class="section">
     <div class="section-title">Summary</div>
     <p>{{ data.summary }}</p>
 </div>
+{% endif %}
 
+
+<!-- SKILLS -->
+{% if data.skills %}
 <div class="section">
     <div class="section-title">Skills</div>
     <ul>
         {% for skill in data.skills %}
+        {% if skill %}
         <li>{{ skill }}</li>
+        {% endif %}
         {% endfor %}
     </ul>
 </div>
+{% endif %}
 
+
+<!-- EXPERIENCE -->
+{% if data.experience %}
 <div class="section">
     <div class="section-title">Experience</div>
-    {% for exp in data.experience %}
-    <div class="item">
-        <div class="role">{{ exp.role }} - {{ exp.company }}</div>
-        <em>{{ exp.dates }}</em>
-        <p>{{ exp.description }}</p>
-    </div>
-    {% endfor %}
-</div>
 
+    {% for exp in data.experience %}
+    {% if exp.role %}
+    <div class="item">
+
+        <div class="role">
+            {{ exp.role }}
+            {% if exp.company %} - {{ exp.company }}{% endif %}
+        </div>
+
+        {% if exp.dates %}
+        <em>{{ exp.dates }}</em>
+        {% endif %}
+
+        {% if exp.desc %}
+        <p>{{ exp.desc }}</p>
+        {% elif exp.description %}
+        <p>{{ exp.description }}</p>
+        {% endif %}
+
+    </div>
+    {% endif %}
+    {% endfor %}
+
+</div>
+{% endif %}
+
+
+<!-- EDUCATION -->
+{% if data.education %}
 <div class="section">
     <div class="section-title">Education</div>
+
     {% for edu in data.education %}
+    {% if edu.degree %}
     <div class="item">
         <strong>{{ edu.degree }}</strong><br>
-        {{ edu.school }} — {{ edu.years }}
+
+        {% if edu.school %}
+        {{ edu.school }}
+        {% endif %}
+
+        {% if edu.years %}
+        — {{ edu.years }}
+        {% endif %}
     </div>
+    {% endif %}
     {% endfor %}
+
 </div>
+{% endif %}
 
 </body>
 </html>

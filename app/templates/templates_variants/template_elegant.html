@@ -1,76 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: "Georgia", serif;
-            margin: 50px;
-            color: #333;
-            background: #faf9f7;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .header {
-            border-left: 6px solid #d4af37;
-            padding-left: 15px;
-            margin-bottom: 35px;
-        }
+<style>
+body{
+    font-family:"Georgia",serif;
+    margin:50px;
+    color:#333;
+    background:#faf9f7;
+}
 
-        .name {
-            font-size: 34px;
-            font-weight: 700;
-        }
+.header{
+    border-left:6px solid #d4af37;
+    padding-left:15px;
+    margin-bottom:35px;
+    display:flex;
+    align-items:center;
+    gap:20px;
+}
 
-        .title {
-            font-size: 18px;
-            color: #555;
-        }
+.profile{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    object-fit:cover;
+}
 
-        h3 {
-            color: #d4af37;
-            margin-top: 28px;
-            font-size: 22px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 4px;
-        }
+.name{
+    font-size:34px;
+    font-weight:700;
+}
 
-        .item { margin-top: 12px; }
-        .company { font-style: italic; color: #777; }
-    </style>
+.title{
+    font-size:18px;
+    color:#555;
+}
+
+.contact{
+    font-size:14px;
+    color:#666;
+    margin-top:4px;
+}
+
+h3{
+    color:#d4af37;
+    margin-top:28px;
+    font-size:22px;
+    border-bottom:1px solid #ddd;
+    padding-bottom:4px;
+}
+
+.item{
+    margin-top:12px;
+}
+
+.company{
+    font-style:italic;
+    color:#777;
+}
+
+.skills{
+    margin-top:8px;
+}
+</style>
 </head>
+
 <body>
 
+<!-- HEADER -->
 <div class="header">
-    <div class="name">{{ data.full_name }}</div>
-    <div class="title">{{ data.title }}</div>
+
+{% if data.photo_dataurl %}
+<img class="profile" src="{{ data.photo_dataurl }}">
+{% elif data.photo_url %}
+<img class="profile" src="{{ data.photo_url }}">
+{% elif data._photo_for_pdf %}
+<img class="profile" src="{{ data._photo_for_pdf }}">
+{% endif %}
+
+<div>
+<div class="name">{{ data.full_name }}</div>
+
+{% if data.title %}
+<div class="title">{{ data.title }}</div>
+{% endif %}
+
+<div class="contact">
+{% if data.email %}{{ data.email }}{% endif %}
+{% if data.phone %} • {{ data.phone }}{% endif %}
+{% if data.website %}<br>{{ data.website }}{% endif %}
+{% if data.linkedin %}<br>{{ data.linkedin }}{% endif %}
 </div>
 
+</div>
+</div>
+
+
+<!-- SUMMARY -->
+{% if data.summary %}
 <h3>Summary</h3>
 <p>{{ data.summary }}</p>
+{% endif %}
 
+
+<!-- SKILLS -->
+{% if data.skills %}
 <h3>Skills</h3>
-<p>
-    {% for skill in data.skills %}
-        • {{ skill }} &nbsp;
-    {% endfor %}
+<p class="skills">
+{% for skill in data.skills %}
+{% if skill %}
+• {{ skill }} &nbsp;
+{% endif %}
+{% endfor %}
 </p>
+{% endif %}
 
+
+<!-- EXPERIENCE -->
+{% if data.experience %}
 <h3>Experience</h3>
+
 {% for exp in data.experience %}
+{% if exp.role %}
 <div class="item">
-    <strong>{{ exp.role }}</strong>
-    <div class="company">{{ exp.company }} — {{ exp.dates }}</div>
-    <p>{{ exp.description }}</p>
+
+<strong>{{ exp.role }}</strong>
+
+<div class="company">
+{% if exp.company %}{{ exp.company }}{% endif %}
+{% if exp.dates %} — {{ exp.dates }}{% endif %}
 </div>
+
+{% if exp.description %}
+<p>{{ exp.description }}</p>
+{% elif exp.desc %}
+<p>{{ exp.desc }}</p>
+{% endif %}
+
+</div>
+{% endif %}
 {% endfor %}
 
+{% endif %}
+
+
+<!-- EDUCATION -->
+{% if data.education %}
 <h3>Education</h3>
+
 {% for edu in data.education %}
+{% if edu.degree %}
 <div class="item">
-    <strong>{{ edu.degree }}</strong> — <span class="company">{{ edu.school }}</span> ({{ edu.years }})
+
+<strong>{{ edu.degree }}</strong>
+
+{% if edu.school %}
+ — <span class="company">{{ edu.school }}</span>
+{% endif %}
+
+{% if edu.years %}
+ ({{ edu.years }})
+{% endif %}
+
 </div>
+{% endif %}
 {% endfor %}
+
+{% endif %}
 
 </body>
 </html>

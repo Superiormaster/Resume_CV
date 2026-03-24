@@ -1,22 +1,28 @@
 // PULL_OUT DASHBOARD
 
 document.addEventListener("DOMContentLoaded", () => {
-        const openDrawer = document.getElementById("openDrawer");
-        const drawer = document.getElementById("mainDrawer");
-        const overlay = document.getElementById("drawerOverlay");
+  const openDrawer = document.getElementById("openDrawer");
+  const drawer = document.getElementById("mainDrawer");
+  const overlay = document.getElementById("drawerOverlay");
 
-        if (!openDrawer || !drawer || !overlay) return;
+  if (!openDrawer || !drawer || !overlay) return;
 
-        function toggleDrawer(show) {
-            const isVisible = show ?? drawer.getAttribute("aria-hidden") === "true";
-            drawer.setAttribute("aria-hidden", !isVisible);
-            overlay.dataset.hidden = !isVisible;
-            openDrawer.setAttribute("aria-expanded", isVisible);
-            document.body.style.overflow = isVisible ? "hidden" : "";
-        }
+  function toggleDrawer(show) {
+    if (show) {
+      drawer.classList.remove("-translate-x-full"); // slide in
+      drawer.classList.add("translate-x-0");
+      overlay.classList.remove("hidden"); // show overlay
+      document.body.style.overflow = "hidden"; // prevent scroll
+    } else {
+      drawer.classList.remove("translate-x-0"); // slide out
+      drawer.classList.add("-translate-x-full");
+      overlay.classList.add("hidden"); // hide overlay
+      document.body.style.overflow = ""; // restore scroll
+    }
+  }
 
-        openDrawer.addEventListener("click", () => toggleDrawer(true));
-        overlay.addEventListener("click", () => toggleDrawer(false));
+  openDrawer.addEventListener("click", () => toggleDrawer(true));
+  overlay.addEventListener("click", () => toggleDrawer(false));
 });
 
 const btn = document.getElementById("btn");
@@ -83,51 +89,66 @@ function shareTwitter() {
 }
 
 // SEARCH BUTTON
-
-
 document.addEventListener("DOMContentLoaded", async () => {
   const searchInput = document.getElementById("searchInput");
-  const searchResults = document.getElementById("searchResults");
+  const resultsContainer = document.getElementById("searchResults");
+  const micBtn = document.getElementById("micBtn");
 
-  // Fetch user's resumes from backend
-  let resumes = [];
+  if (!searchInput || !resultsContainer) return;
+
+  // Optional: Fetch all user resumes once for local filtering
+/* let resumes = [];
   try {
     const res = await fetch("/api/user_resumes");
-    resumes = await res.json();
+    if (res.ok) {
+      resumes = await res.json();
+    } else {
+      const text = await res.text();
+      console.error("Failed to fetch resumes:", res.status, text);
+    }
   } catch (err) {
     console.error("Failed to fetch resumes:", err);
+  }*/
+
+  async function performSearch(query) {
+    resultsContainer.innerHTML = "";
+
+    if (!query) return;
+
+    let data = [];
+    try {
+      const res = await fetch(`/resume/api/search_resumes?q=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        console.error("Search API error:", res.status, text);
+      }
+    } catch (err) {
+      console.error("Search fetch error:", err);
+    }
+
+    if (!data.length) {
+      resultsContainer.style.display = "none";
+      return;
+    }
+
+    data.forEach(resume => {
+      const div = document.createElement("div");
+      div.className = "search-result-item";
+      div.innerHTML = `<a href="/resume/resume/${resume.id}">${resume.title}</a>`;
+      resultsContainer.appendChild(div);
+    });
+    resultsContainer.style.display = "block";
   }
 
-  searchInput.addEventListener("input", () => {
-    const query = searchInput.value.toLowerCase();
-    searchResults.innerHTML = "";
-
-    if (query) {
-      const filtered = resumes.filter(r => r.title.toLowerCase().includes(query));
-      filtered.forEach(r => {
-        const div = document.createElement("div");
-        div.className = "search-result-item";
-        div.textContent = r.title;
-        div.addEventListener("click", () => {
-          // Redirect to resume view/edit page
-          window.location.href = `/resume/edit/${r.id}`;
-        });
-        searchResults.appendChild(div);
-      });
-      searchResults.style.display = filtered.length ? "block" : "none";
-    } else {
-      searchResults.style.display = "none";
-    }
+  searchInput.addEventListener("input", (e) => {
+    const query = searchInput.value.trim();
+    performSearch(query);
   });
 
-  // Optional: Search button
-  document.getElementById("searchBtn").addEventListener("click", () => {
-    alert(`Searching for: ${searchInput.value}`);
-  });
-
-  // Optional: Mic button
-  const micBtn = document.getElementById("micBtn");
-  if ("webkitSpeechRecognition" in window) {
+  // Mic voice input
+  if (micBtn && "webkitSpeechRecognition" in window) {
     const recognition = new webkitSpeechRecognition();
     recognition.continuous = false;
     recognition.lang = "en-US";
@@ -139,7 +160,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       searchInput.value = transcript;
       searchInput.dispatchEvent(new Event("input"));
     };
-  } else {
+  } else if (micBtn) {
     micBtn.style.display = "none";
   }
 });

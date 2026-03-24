@@ -1,82 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: "Inter", sans-serif;
-            margin: 40px;
-            color: #1f1f1f;
-            background: #fff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .name {
-            font-size: 32px;
-            font-weight: 800;
-        }
+<style>
+body{
+    font-family:"Inter",sans-serif;
+    margin:40px;
+    color:#1f1f1f;
+    background:#fff;
+}
 
-        .title {
-            font-size: 18px;
-            color: #676767;
-            margin-bottom: 25px;
-        }
+.header{
+    display:flex;
+    align-items:center;
+    gap:18px;
+}
 
-        .section {
-            margin-top: 35px;
-        }
+.profile{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    object-fit:cover;
+}
 
-        .section h3 {
-            font-size: 20px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 6px;
-            margin-bottom: 14px;
-        }
+.name{
+    font-size:32px;
+    font-weight:800;
+}
 
-        .item { margin-bottom: 15px; }
-        .item-title { font-weight: 700; }
-        .item-company { color: #777; }
-    </style>
+.title{
+    font-size:18px;
+    color:#676767;
+    margin-bottom:6px;
+}
+
+.contact{
+    font-size:14px;
+    color:#777;
+}
+
+.section{
+    margin-top:35px;
+}
+
+.section h3{
+    font-size:20px;
+    border-bottom:2px solid #eee;
+    padding-bottom:6px;
+    margin-bottom:14px;
+}
+
+.item{
+    margin-bottom:15px;
+}
+
+.item-title{
+    font-weight:700;
+}
+
+.item-company{
+    color:#777;
+}
+</style>
 </head>
+
 <body>
 
+<!-- HEADER -->
+<div class="header">
+
+{% if data.photo_dataurl %}
+<img class="profile" src="{{ data.photo_dataurl }}">
+{% elif data.photo_url %}
+<img class="profile" src="{{ data.photo_url }}">
+{% elif data._photo_for_pdf %}
+<img class="profile" src="{{ data._photo_for_pdf }}">
+{% endif %}
+
+<div>
 <div class="name">{{ data.full_name }}</div>
+
+{% if data.title %}
 <div class="title">{{ data.title }}</div>
+{% endif %}
 
-<div class="section">
-    <h3>Summary</h3>
-    <p>{{ data.summary }}</p>
+<div class="contact">
+{% if data.email %}{{ data.email }}{% endif %}
+{% if data.phone %} • {{ data.phone }}{% endif %}
+{% if data.website %}<br>{{ data.website }}{% endif %}
+{% if data.linkedin %}<br>{{ data.linkedin }}{% endif %}
+</div>
 </div>
 
-<div class="section">
-    <h3>Skills</h3>
-    <ul>
-        {% for skill in data.skills %}
-        <li>{{ skill }}</li>
-        {% endfor %}
-    </ul>
 </div>
 
+
+<!-- SUMMARY -->
+{% if data.summary %}
 <div class="section">
-    <h3>Experience</h3>
-    {% for exp in data.experience %}
-    <div class="item">
-        <div class="item-title">{{ exp.role }}</div>
-        <div class="item-company">{{ exp.company }} — {{ exp.dates }}</div>
-        <p>{{ exp.description }}</p>
-    </div>
-    {% endfor %}
+<h3>Summary</h3>
+<p>{{ data.summary }}</p>
+</div>
+{% endif %}
+
+
+<!-- SKILLS -->
+{% if data.skills %}
+<div class="section">
+<h3>Skills</h3>
+<ul>
+{% for skill in data.skills %}
+{% if skill %}
+<li>{{ skill }}</li>
+{% endif %}
+{% endfor %}
+</ul>
+</div>
+{% endif %}
+
+
+<!-- EXPERIENCE -->
+{% if data.experience %}
+<div class="section">
+<h3>Experience</h3>
+
+{% for exp in data.experience %}
+{% if exp.role %}
+<div class="item">
+
+<div class="item-title">{{ exp.role }}</div>
+
+<div class="item-company">
+{% if exp.company %}{{ exp.company }}{% endif %}
+{% if exp.dates %} — {{ exp.dates }}{% endif %}
 </div>
 
-<div class="section">
-    <h3>Education</h3>
-    {% for edu in data.education %}
-    <div class="item">
-        <div class="item-title">{{ edu.degree }}</div>
-        <div class="item-company">{{ edu.school }} — {{ edu.years }}</div>
-    </div>
-    {% endfor %}
+{% if exp.description %}
+<p>{{ exp.description }}</p>
+{% elif exp.desc %}
+<p>{{ exp.desc }}</p>
+{% endif %}
+
 </div>
+{% endif %}
+{% endfor %}
+
+</div>
+{% endif %}
+
+
+<!-- EDUCATION -->
+{% if data.education %}
+<div class="section">
+<h3>Education</h3>
+
+{% for edu in data.education %}
+{% if edu.degree %}
+<div class="item">
+
+<div class="item-title">{{ edu.degree }}</div>
+
+<div class="item-company">
+{% if edu.school %}{{ edu.school }}{% endif %}
+{% if edu.years %} — {{ edu.years }}{% endif %}
+</div>
+
+</div>
+{% endif %}
+{% endfor %}
+
+</div>
+{% endif %}
 
 </body>
 </html>

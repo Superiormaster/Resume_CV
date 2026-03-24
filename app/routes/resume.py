@@ -37,10 +37,10 @@ def save_uploaded_photo(file_storage, dest_dir, prefix="photo"):
 
 @resume_bp.route("/api/user_resumes")
 def user_resumes():
+    # Only fetch resumes for the logged-in user
     resumes = Resume.query.all()
-    # Return only id and title (or name)
-    data = [{"id": r.id, "title": r.title} for r in resumes]
-    return jsonify(data)
+    results = [{"id": r.id, "title": r.title} for r in resumes]
+    return jsonify(results)
     
 @resume_bp.route('/templates')
 def templates():
@@ -155,30 +155,24 @@ def preview():
           
   photo = request.files.get('photo')
   if photo and allowed_file(photo.filename):
+    photo_bytes = photo.read()
 
-    # read bytes and base64 encode - safe for inline preview
+    # base64 for preview
+    b64 = base64.b64encode(photo_bytes).decode('ascii')
+    structured['photo_dataurl'] = f"data:{photo.mimetype};base64,{b64}"
+
+    # save to disk for final PDF usage
+    photo.seek(0)
     photo_rel = save_uploaded_photo(
         file_storage=photo,
         dest_dir=os.path.join(BASE_DIR, 'static', 'uploads'),
         prefix='resume_preview'
-
     )
 
     if photo_rel:
         structured['photo_url'] = url_for('static', filename=photo_rel)
-
-        # Absolute path for PDF generator if needed
         structured['_photo_file'] = os.path.join(BASE_DIR, 'static', photo_rel)
 
-        # Base64 for inline preview
-        photo.seek(0)  # rewind file pointer
-        photo_bytes = photo.read()
-        b64 = base64.b64encode(photo_bytes).decode('ascii')
-        structured['photo_dataurl'] = f"data:{photo.mimetype};base64,{b64}"
-
-    else:
-        # Keep existing photo_url if present
-        structured['photo_url'] = structured.get('photo_url')
   template = simple.get("template", 'template_modern.html').strip()
   templates_dir = os.path.join(current_app.root_path, "templates", "templates_variants")
   allowed_templates = set(os.listdir(templates_dir)) if os.path.exists(templates_dir) else set()
@@ -400,3 +394,24 @@ def download_resume(resume_id, fmt):
   else:
     flash(f"Unsupported Download Format.", "danger")
     return redirect(url_for("dashboard_bp.dashboard"))
+
+@resume_bp.route("/api/search_resumes")
+def search_resumes():
+    query = request.args.get("q", "").strip()
+
+    if not query:
+        return jsonify([])
+
+    resumes = Resume.query.filter(
+        Resume.title.ilike(f"%{query}%")
+    ).all()
+
+    results = [
+        {
+            "id": r.id,
+            "title": r.title
+        }
+        for r in resumes
+    ]
+
+    return jsonify(results)

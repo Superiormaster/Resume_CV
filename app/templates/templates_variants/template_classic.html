@@ -5,74 +5,169 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ data.full_name }} - Resume (Classic)</title>
     <style>
-        @page{
+        @page {
             size: A4;
             margin: 20mm;
         }
 
-        body{
+        body {
             color: #111;
             font-family: Georgia, serif;
+            line-height: 1.5;
         }
 
-        .header{
+        .header {
             border-bottom: 1px solid #ddd;
-            padding-bottom: 8px;
-            margin-bottom: 12px;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
         }
 
-        .name{
+        .profile {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ccc;
+        }
+
+        .name {
             font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 4px;
         }
 
-        .contact{
+        .title {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        .contact {
+            font-size: 14px;
             color: #333;
         }
 
-        .section{
-            margin-bottom: 12px;
+        .section {
+            margin-bottom: 16px;
+        }
+
+        .section h3 {
+            font-size: 20px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 2px;
+        }
+
+        .skills span {
+            display: inline-block;
+            margin-right: 6px;
+            margin-bottom: 4px;
+            padding: 3px 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .experience-item, .education-item {
+            margin-bottom: 10px;
+        }
+
+        .experience-item strong, .education-item strong {
+            display: block;
+            font-weight: bold;
+        }
+
+        .experience-item em, .education-item em {
+            font-style: italic;
+            color: #555;
+            font-size: 13px;
+        }
+
+        .description {
+            margin-top: 2px;
         }
     </style>
 </head>
 <body>
+
+    <!-- HEADER -->
     <div class="header">
-      {% if data.photo_url %}
-        <img class="profile" src="{{ data.photo_url }}" alt="Photo">
-      {% elif data._photo_for_pdf %}
-        <img class="profile" src="{{ data._photo_for_pdf }}" alt="Photo">
-      {% endif %}
-        <div class="name">{{ data.full_name }}</div>
-        <div class="contact">{{ data.email }} . {{ data.phone }} . {{ data.website }} . {{ data.linkedin }}</div>
+        {% if data.photo_dataurl %}
+            <img class="profile" src="{{ data.photo_dataurl }}" alt="Photo">
+        {% elif data.photo_url %}
+            <img class="profile" src="{{ data.photo_url }}" alt="Photo">
+        {% elif data._photo_for_pdf %}
+            <img class="profile" src="{{ data._photo_for_pdf }}" alt="Photo">
+        {% endif %}
+        <div>
+            <div class="name">{{ data.full_name }}</div>
+            {% if data.title %}
+                <div class="title">{{ data.title }}</div>
+            {% endif %}
+            <div class="contact">
+                {% if data.email %}{{ data.email }}{% endif %}
+                {% if data.phone %} • {{ data.phone }}{% endif %}
+                {% if data.website %} • {{ data.website }}{% endif %}
+                {% if data.linkedin %} • <a href="{{ data.linkedin }}" target="_blank">{{ data.linkedin }}</a>{% endif %}
+            </div>
+        </div>
     </div>
 
+    <!-- PROFILE / SUMMARY -->
+    {% if data.summary %}
     <div class="section">
         <h3>Profile</h3>
         <p>{{ data.summary }}</p>
     </div>
+    {% endif %}
 
+    <!-- SKILLS -->
+    {% if data.skills %}
     <div class="section">
         <h3>Skills</h3>
-        <p>{{ ",".join(data.skills) }}</p>
+        <div class="skills">
+            {% for s in data.skills %}
+                {% if s %}<span>{{ s }}</span>{% endif %}
+            {% endfor %}
+        </div>
     </div>
+    {% endif %}
 
+    <!-- EXPERIENCE -->
+    {% if data.experience %}
     <div class="section">
         <h3>Experience</h3>
         {% for e in data.experience %}
-            <div>
-                <strong>{{ e.role }}</strong> — {{ e.company }}
-                <em>({{ e.dates }})</em>
-                <div>{{ e.desc }}</div>
+            {% if e.role %}
+            <div class="experience-item">
+                <strong>{{ e.role }}</strong>
+                {% if e.company %}<span>{{ e.company }}</span>{% endif %}
+                {% if e.dates %}<em>{{ e.dates }}</em>{% endif %}
+                {% if e.desc %}<div class="description">{{ e.desc }}</div>{% endif %}
             </div>
+            {% endif %}
         {% endfor %}
     </div>
+    {% endif %}
 
+    <!-- EDUCATION -->
+    {% if data.education %}
     <div class="section">
         <h3>Education</h3>
         {% for ed in data.education %}
-        <div>
-            {{ ed.degree }} - {{ ed.school }} ({{ ed.years }})
-        </div>
+            {% if ed.degree %}
+            <div class="education-item">
+                <strong>{{ ed.degree }}</strong>
+                {% if ed.school %}<span>{{ ed.school }}</span>{% endif %}
+                {% if ed.years %}<em>{{ ed.years }}</em>{% endif %}
+            </div>
+            {% endif %}
         {% endfor %}
     </div>
+    {% endif %}
+
 </body>
 </html>

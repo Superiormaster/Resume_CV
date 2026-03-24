@@ -5,11 +5,11 @@
   <h2>Compose Resume</h2>
   <div class="display">
     <div class="left">
-      <form method="post" id="resumeForm" action="{{ url_for('resume.save') }}" enctype="multipart/form-data">
+      <form method="post" class="text-black" id="resumeForm" action="{{ url_for('resume.save') }}" enctype="multipart/form-data">
           
           <input type="hidden" name="template" value="{{ selected_template }}">
 
-          <div class="selected-template">
+          <div class="space-y-3 selected-template">
             <h4>Selected Template</h4>
           
             {% set name_no_ext = selected_template.rsplit('.', 1)[0] %}
@@ -19,11 +19,17 @@
           
             <p>{{ name_no_ext.replace('_', ' ').title() }}</p>
           
-            <a href="{{ url_for('resume.templates') }}">Change template</a>
+            <a class="bg-gray-500 p-2 rounded" href="{{ url_for('resume.templates') }}">Change template</a>
           </div>
 
         <label>Photo</label>
-        <input type="file" name="photo" class="form-control" accept="image/*">
+        <label class="flex items-center justify-center w-full h-30 px-4 py-6 text-gray-600 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 hover:border-gray-400 transition-all">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V8m0 0l-4 4m4-4l4 4M17 16V8m0 0l-4 4m4-4l4 4" />
+                  </svg>
+                  <span class="text-sm">Click to upload</span>
+                  <input type="file" name="photo" accept="image/*" class="hidden">
+                </label>
 
                 <h4 class="mt-4">Personal Details</h4>
                 <label>Full name </label><input name="full_name" class="form-control" required><br>
@@ -78,9 +84,9 @@
 
                 <div class="btn-primary">
 
-                    <button type="button" id="previewBtn">Live Preview</button>
+                    <button type="button" id="previewBtn" class="flex-1 bg-[#c89a1a] text-white py-2 rounded hover:bg-[var(--brand-dark)] transition">Live Preview</button>
 
-                    <button type="submit">Save Resume</button>
+                    <button type="submit" class="flex-1 bg-[#c89a1a] text-white py-2 rounded hover:bg-[var(--brand-dark)] transition">Save Resume</button>
 
                 </div>
 
@@ -90,7 +96,7 @@
 
         <div class="right mt-4">
 
-            <h2>Live Preview</h2>
+            <h2 class="text-xl font-semibold mb-4">Live Preview</h2>
 
             <iframe id="previewFrame" style="width: 100%; height:800px; border:1px solid #ccc;"></iframe>
 
