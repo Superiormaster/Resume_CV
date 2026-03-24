@@ -7,7 +7,6 @@ from config import Config
 import os
 from flask_migrate import Migrate
 from app.routes.meta import meta_bp
-from flask_sqlalchemy import SQLAlchemy
 from app.extensions import db
 from app.models import AppSettings
 from datetime import datetime
@@ -21,10 +20,13 @@ def create_app():
     os.makedirs(app.config["RESUME_FOLDER"], exist_ok=True)
 
     database_url = os.getenv("DATABASE_URL")
+    
     if database_url:
-        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+        app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
 
     db.init_app(app)
     migrate = Migrate(app, db)
