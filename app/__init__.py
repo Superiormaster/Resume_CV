@@ -8,8 +8,7 @@ import os
 from flask_migrate import Migrate
 from app.routes.meta import meta_bp
 from flask_sqlalchemy import SQLAlchemy
-from app.extensions import db, login_manager, mail
-from flask_login import current_user
+from app.extensions import db
 from app.models import AppSettings
 from datetime import datetime
 
@@ -28,9 +27,7 @@ def create_app():
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 
     db.init_app(app)
-    mail.init_app(app)
     migrate = Migrate(app, db)
-    login_manager.init_app(app)
     
     # Register blueprints
     app.register_blueprint(dashboard_bp)
@@ -46,10 +43,5 @@ def create_app():
     @app.context_processor
     def inject_settings():
         return dict(AppSettings=AppSettings)
-    
-    print("MAIL USER:", app.config["MAIL_USERNAME"])
-    print("MAIL PASS SET:", bool(app.config["MAIL_PASSWORD"]))
-    print("SMTP SERVER:", app.config["MAIL_SERVER"])
-    print("SMTP PORT:", app.config["MAIL_PORT"])
 
     return app
